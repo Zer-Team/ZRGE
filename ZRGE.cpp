@@ -9,6 +9,13 @@
 
 */
 
+/*
+
+    GCC 14.2.1
+    SFML 2.6.2
+    C++ 20
+*/
+
 // Библиотеки
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -40,7 +47,7 @@
 
 #define Y_SLIDER HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
 
-// Добавления в область видемости
+// Добавления в область видимости
 using std::cout;
 using std::cerr;
 using std::cin;
@@ -54,7 +61,7 @@ void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite
 // Главная функция
 int main(int argc, char **argv) {
     Image img; // Изображения
-    std::string filepath_temp = ".tempZRGE_file.tmp"; // Путь к временому файлу
+    std::string filepath_temp = ".tempZRGE_file.tmp"; // Путь к временному файлу
     std::string filepath = ""; // Путь к файлу
     std::string stringFile; // Хранения строки файлов
     std::ifstream file; // Файл для парсинга
@@ -87,7 +94,7 @@ int main(int argc, char **argv) {
             // Пропуск комментариев и пустых строк. 
             if (stringFile[0]=='\n'||stringFile.empty()) continue;
 
-            // Вызов парсера на текущей строке
+            // Вызов парсира на текущей строке
             Error = parserParam(stringFile, img);
             if (Error == 1) break;
             if (Error != 0) return 1;
@@ -150,7 +157,7 @@ int main(int argc, char **argv) {
     // Растягивание текстуры
     sprite.setScale(img.width * factor / texture.getSize().x,img.height * factor / texture.getSize().y);
 
-    // Перименные для холста 
+    // Переменные для холста 
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
     bool isErasing = false, isPaint = true, isSave = true, isPipette; // Для проверок
     u_short brushSize = 5; // Размер кисти
@@ -226,6 +233,7 @@ int main(int argc, char **argv) {
         sf::Event event;
         // Обработка событий
         while (window.pollEvent(event)) {
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
             // Закрытие
             if (event.type == sf::Event::Closed || event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 if (isSave == false) 
@@ -254,9 +262,9 @@ int main(int argc, char **argv) {
                         return 0;
                     }
             }
+            
             // Нажатие кнопок мыши
             if (event.type == sf::Event::MouseButtonPressed) {
-                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 // Кнопки
                 if (buttonBrush.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
                     isErasing = false;
@@ -287,22 +295,31 @@ int main(int argc, char **argv) {
                     draggingB = true; isPaint = false;
 
                 }
-                // Пипетка
-                else if ((isPipette || sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) && (mousePos.x/factor <= img.width && mousePos.y/factor <= img.height)) {
+                // Пипетка CTRL
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && (mousePos.x/factor <= img.width && mousePos.y/factor <= img.height)) {
                     brushColor = canvas.getPixel(mousePos.x/factor, mousePos.y/factor);
                     colorPreview.setFillColor(brushColor);
-                    img.rgb[0] = brushColor.r;
-                    img.rgb[1] = brushColor.g;
-                    img.rgb[2] = brushColor.b;
+                    img.rgb[0] = brushColor.r / COLOR_FACTOR;
+                    img.rgb[1] = brushColor.g / COLOR_FACTOR;
+                    img.rgb[2] = brushColor.b / COLOR_FACTOR;
                     isPipette = false;
-                    continue;
                 }
             }
             // Отжатие кнопок мыши
             if (event.type == sf::Event::MouseButtonReleased) {
+                // Пипетка
+                if (isPipette && (mousePos.x/factor <= img.width && mousePos.y/factor <= img.height)) {
+                    brushColor = canvas.getPixel(mousePos.x/factor, mousePos.y/factor);
+                    colorPreview.setFillColor(brushColor);
+                    img.rgb[0] = brushColor.r / COLOR_FACTOR;
+                    img.rgb[1] = brushColor.g / COLOR_FACTOR;
+                    img.rgb[2] = brushColor.b / COLOR_FACTOR;
+                    isPipette = false;
+                }
                 draggingR = draggingG = draggingB = false;
                 isPaint = true;
             } 
+            
             // Передвижения курсора мыши
             if (event.type == sf::Event::MouseMoved) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -314,6 +331,7 @@ int main(int argc, char **argv) {
                     img.rgb[2] = std::clamp(mousePos.x - sliderB.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                 }
             }
+            
             // Клавиатура
             else if (event.type == sf::Event::KeyPressed) {
                 // Кисточка
