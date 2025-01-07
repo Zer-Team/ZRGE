@@ -33,7 +33,7 @@ typedef unsigned short u_short;
 class Image
 {
 public:
-    std::string format{""}; // Фармат изображения
+    std::string format{""}; // Формат изображения
     std::string mode{"rgb"}; // Режим отображения цвета например rgb
     std::string compression{""}; // Сжатие
     u_short width{0}; // Ширина изображения
@@ -44,10 +44,10 @@ public:
 
     u_int point{0}; // Позиция пикселя заполнения с лево на право сверху вниз
 
-    bool randerStart{false}; // Разрешения на рендер
+    bool renderStart{false}; // Разрешения на рендер
 };
 
-// Класс для пораметров
+// Класс для параметров
 class Parameter
 {
     std::string name; // Имя

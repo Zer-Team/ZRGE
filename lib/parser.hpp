@@ -34,12 +34,12 @@
 // npos
 #define NPOS std::string::npos
 
-// Добавления в область видемости
+// Добавления в область видимости
 using std::cout;
 using std::cerr;
 using std::endl;
 
-// Функция для проверки существования заданого символа в строке
+// Функция для проверки существования заданного символа в строке
 bool containsChar(const std::string& str, char ch) {
     return str.find(ch) != NPOS;
 }
@@ -57,7 +57,7 @@ std::string toLowerCase(const std::string& input) {
     return result;
 }
 
-// Функция для получения такста из заданных символов 
+// Функция для получения текста из заданных символов 
 std::string extractContent(const std::string& str, char startChar, char endChar) {
     std::string result;
     size_t start = 0;
@@ -107,7 +107,7 @@ char parserParam(std::string &str, Image &img)
             return -2;
         }
             
-        img.randerStart = true;
+        img.renderStart = true;
         return 1;
     }
 
@@ -122,7 +122,7 @@ char parserParam(std::string &str, Image &img)
 char parserPixel(std::string &str, Image &img)
 {
     // Обработка строки с RGB
-    if (containsChar(str, '[') && containsChar(str, ']') && img.randerStart) {
+    if (containsChar(str, '[') && containsChar(str, ']') && img.renderStart) {
         std::string content = extractContent(str, '[', ']');
 
         if (containsChar(str, '(') && containsChar(str, ')') && containsString(img.compression, "0"))
@@ -154,7 +154,7 @@ char parserPixel(std::string &str, Image &img)
     // Обработка команды @END@
     if (containsString(str, "@e@")) {
         std::cout << "\033[32mRendering completed\033[0m" << std::endl;
-        img.randerStart = false;
+        img.renderStart = false;
         // Проверка на равенства
         if(img.point + img.quantity < img.width * img.height) cout << "\033[1;33mWARNING: Number of pixels is less than required\033[0m" << endl;
         return 1; // Завершаем

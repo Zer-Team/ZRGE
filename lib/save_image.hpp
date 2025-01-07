@@ -22,7 +22,7 @@
 #include "./compress.hpp"
 
 
-// Добавления в область видемости
+// Добавления в область видимости
 using std::cout;
 using std::cerr;
 using std::endl;
