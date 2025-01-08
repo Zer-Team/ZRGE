@@ -34,6 +34,10 @@
 // npos
 #define NPOS std::string::npos
 
+// Объявления типов
+typedef unsigned short u_short;
+typedef unsigned char u_int8_t;
+
 // Добавления в область видимости
 using std::cout;
 using std::cerr;
@@ -86,17 +90,15 @@ char parserParam(std::string &str, Image &img)
         // Создания объекта и присвоения значений
         Parameter param{extractContent(str, '{', '}'), extractContent(str, '(', ')')};
         // Получения данных
-        if (containsString(param.getName(), "f"))
-            img.format=param.getValue();
         if (containsString(param.getName(), "m"))
-            img.mode=param.getValue();
+            img.mode = param.getValue();
         if (containsString(param.getName(), "c"))
-            img.compression=param.getValue();
+            img.compression = param.getValue();
         // Получения размеров
         if (containsString(param.getName(), "w"))
-            img.width=std::strtoul((param.getValue().data()), nullptr, 10);
+            img.width = std::strtoul((param.getValue().data()), nullptr, 10);
         if (containsString(param.getName(), "h"))
-            img.height=std::strtoul((param.getValue().data()), nullptr, 10);
+            img.height = std::strtoul((param.getValue().data()), nullptr, 10);
     }
     
     else if (containsString(str, "@s@"))

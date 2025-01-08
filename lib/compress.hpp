@@ -14,6 +14,9 @@
 
 #define NPOS std::string::npos
 
+// Объявления типов
+typedef unsigned int u_int;
+
 // Добавления в область видемости
 using std::cout;
 using std::cerr;

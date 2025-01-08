@@ -21,6 +21,8 @@
 #include "./classes.hpp"
 #include "./compress.hpp"
 
+// Объявления типов
+typedef unsigned int u_int;
 
 // Добавления в область видимости
 using std::cout;

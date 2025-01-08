@@ -46,14 +46,21 @@
 
 #define Y_SLIDER HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
 
+// Объявления типов
+typedef unsigned short u_short;
+
 // Добавления в область видимости
 using std::cout;
 using std::cerr;
 using std::cin;
 using std::endl;
 
+// Очистка cin
+void clearCin();
+
 // Функция для создания ползунков
 void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, int value, sf::Color color, const sf::Vector2f &position);
+
 // Функция для создания кнопок
 void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position);
 
@@ -66,6 +73,8 @@ int main(int argc, char **argv) {
     std::ifstream file; // Файл для парсинга
     u_short factor{1}; // Увеличения
     char Error {0}; // Ошибки
+    sf::Image canvas; // Холст
+    sf::Texture texture; // Текстура холста
 
     cout << "\033[1;33mWelcome to ZeR Graphics Editor " << VERSION << "!\033[0m" << endl;
     
@@ -81,29 +90,56 @@ int main(int argc, char **argv) {
     // Проверка наличия файла
     if (std::ifstream(filepath).is_open())
     {
-        file.open(filepath, std::ios::binary);
-        
         // Запрос увлечения
         cout << "Enter canvas factor: ";
         cin >> factor;
 
-        // Парсинг параметров из файла
-        while (getline(file, stringFile))
+        // Заполнение структуры изображения
+        //  Формат изображения PNG
+        if (filepath.substr(filepath.length() - 4) == ".png")
         {
-            // Пропуск комментариев и пустых строк. 
-            if (stringFile[0]=='\n'||stringFile.empty()) continue;
+            img.format = "png";
+            img.compression = "rle";
+        }
+        //  Формат изображения JPG
+        if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
+        {
+            img.format = "jpg";
+            img.compression = "rle";
+        }
+        //  Формат изображения ZPIF
+        else if (filepath.substr(filepath.length() - 5) == ".zpif")
+        {
+            img.format = "zpif";
 
-            // Вызов парсира на текущей строке
-            Error = parserParam(stringFile, img);
-            if (Error == 1) break;
-            if (Error != 0) return 1;
-        }  
-        stringFile.clear();
+            file.open(filepath, std::ios::binary);
+
+            // Парсинг параметров из файла
+            while (getline(file, stringFile))
+            {
+                // Пропуск комментариев и пустых строк. 
+                if (stringFile[0]=='\n'||stringFile.empty()) continue;
+
+                // Вызов парсира на текущей строке
+                Error = parserParam(stringFile, img);
+                if (Error == 1) break;
+                if (Error != 0) return 1;
+            }  
+            stringFile.clear();
+        }
+
+        //  Ошибка не поддерживаемого формата
+        else
+        {
+            cerr << "\033[1;31mError 2: Unsupported file format.\033[0m" << endl;
+            return 1;
+        }
+
     }
     else
     {
         char createFile{'\0'};
-        cout << "File does not exist create? [Y/n]";
+        cout << "File does not exist create? [Y/n] ";
 
         cin >> createFile;
 
@@ -117,11 +153,6 @@ int main(int argc, char **argv) {
         cin >> img.height;
         cout << "Enter canvas factor: ";
         cin >> factor;
-
-        // Параметры изображения
-        img.format = "ZPIFv1"; // Формат
-        img.width = img.width; // Ширина
-        img.height = img.height; // Высота
         // Запрос на использование сжатия
         cout << "\033[1mUse RLE compression? [Y/n] \033[0m";
         cin >> img.compression;
@@ -130,13 +161,58 @@ int main(int argc, char **argv) {
         else
             img.compression = "0";
 
+        // Параметры изображения
+        //  Формат PNG
+        if (filepath.substr(filepath.length() - 4) == ".png")
+            img.format = "png";
+
+        //  Формат PNG
+        else if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
+            img.format = "jpg";
+        
+        //  Формат ZPIF
+        else if (filepath.substr(filepath.length() - 5) == ".zpif")
+            img.format = "zpif";
+        
+        // Ошибка не поддерживаемого формата
+        else
+        {
+            cerr << "\033[1;31mError 2: Unsupported file format.\033[0m" << endl;
+            return 1;
+        }
     }
 
+    // Загрузка файла в холст
+    if ((img.format == "png" || img.format == "jpg") && std::ifstream(filepath).is_open())
+    {
+        // Загрузка изображения
+        canvas.loadFromFile(filepath);
+
+        // Получение размеров изображения
+        img.width = canvas.getSize().x;
+        img.height = canvas.getSize().y;
+    }
+    else if (img.format == "png" || img.format == "jpg")
+    {
+        // Создания холста
+        canvas.create(img.width, img.height, sf::Color::White);
+    }
+    else if (img.format == "zpif")
+    {
+        // Создания холста
+        canvas.create(img.width, img.height, sf::Color::White);
+    }
+    else
+        return 1;
+
+    // Загрузка холста в текстуру
+    texture.loadFromImage(canvas);
+
     // Создания окна
-    sf::RenderWindow window(sf::VideoMode(img.width * factor + WIDTH_COLOR_SLIDER + INDENT_X * 2, img.height * factor > Y_SLIDER*11 ? img.height * factor : Y_SLIDER*11), "ZeR Graphics Editor", sf::Style::Close);
-    // Создания изображения
-    sf::Image canvas;
-    canvas.create(img.width, img.height, sf::Color::White);
+    sf::RenderWindow window(sf::VideoMode(img.width * factor + WIDTH_COLOR_SLIDER + INDENT_X * 2, img.height * factor > Y_SLIDER*12 ? img.height * factor : Y_SLIDER*12), "ZeR Graphics Editor", sf::Style::Close);
+
+    // Создание индикатора
+    sf::Sprite sprite(texture);
 
     // Загрузка иконки
     sf::Image icon;
@@ -146,12 +222,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    // Установка иконки окна
     window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr()); // Установка иконки
-
-    //  Создания текстуры холста
-    sf::Texture texture;
-    texture.loadFromImage(canvas);
-    sf::Sprite sprite(texture);
 
     // Растягивание текстуры
     sprite.setScale(img.width * factor / texture.getSize().x,img.height * factor / texture.getSize().y);
@@ -180,14 +252,15 @@ int main(int argc, char **argv) {
     sliderB.setFillColor(sf::Color::Blue);
     // Разделитель
     indent.setFillColor(sf::Color(60, 60, 60));
-    indent.setSize(sf::Vector2f(INDENT_X / 2, img.height * factor));
+    indent.setSize(sf::Vector2f(INDENT_X / 2, window.getSize().y));
     indent.setPosition(img.width*factor, 0);
     // Показатель цвета
     colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
     colorPreview.setPosition(img.width*factor+INDENT_X/2, 0);
     colorPreview.setFillColor(brushColor);
 
-    if (std::ifstream(filepath).is_open())
+    // Загрузка изображения текстуры
+    if (std::ifstream(filepath).is_open() && img.format == "zpif")
     {
         // Парсинг и заполнения пикселя
         while (getline(file, stringFile)) {
@@ -228,6 +301,7 @@ int main(int argc, char **argv) {
         img.rgb[0] = img.rgb[1] = img.rgb[2] = 0;
     }
     
+    // Цикл программы
     while (window.isOpen()) {
         sf::Event event;
         // Обработка событий
@@ -239,9 +313,9 @@ int main(int argc, char **argv) {
                 {
                     std::string answer;
                     
-                    cin.clear();
-                    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    clearCin();
                     
+                    // Запрос на сохранения изображения
                     cout << "Save image? [Y/n] ";
                     cin >> answer;
                     if (answer.find('y')!= NPOS || answer.find('Y')!= NPOS)
@@ -250,16 +324,10 @@ int main(int argc, char **argv) {
                         if (Error < 0)
                             return 1;
                     }
-                    cout << "\033[1;33mExit\033[0m" << endl;
-                    window.close();
-                    return 0;
                 }
-                    else
-                    {
-                        cout << "\033[1;33mExit\033[0m" << endl;
-                        window.close();
-                        return 0;
-                    }
+                cout << "\033[1;33mExit\033[0m" << endl;
+                window.close();
+                return 0;
             }
             
             // Нажатие кнопок мыши
@@ -356,11 +424,33 @@ int main(int argc, char **argv) {
                 }            
                 // Сохранение
                 else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-                    Error = saveImage(canvas, img, filepath, filepath_temp, Error);
-                    if (Error < 0)
-                        return 1;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+                    {
+                        cout << "\033[1mEnter a new file name: \033[0m";
+                        clearCin();
+                        getline(cin, filepath);
+                        if (filepath.substr(filepath.length() - 4) == ".png") img.format="png";
+                        if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg") img.format="png";
+                        if (filepath.substr(filepath.length() - 5) == ".zpif") img.format="zpif";
+                    }
+
+                    if (img.format=="png" || img.format=="png") 
+                    {
+                        if (canvas.saveToFile(filepath)) {
+                            cout << "\033[32mImage saved successfully.\033[0m" << endl;
+                        } else {
+                            cerr << "\033[1;31mFailed to save image.\033[0m" << endl;
+                            return 1;
+                        }
+                    }
+                    else if (img.format=="zpif")
+                    {
+                        Error = saveImage(canvas, img, filepath, filepath_temp, Error);
+                        if (Error < 0)
+                            return 1;
+                    }
                     isSave = true;
-                }
+                }     
             }
         }
         
@@ -368,7 +458,7 @@ int main(int argc, char **argv) {
         brushColor = sf::Color(img.rgb[0] * COLOR_FACTOR, img.rgb[1] * COLOR_FACTOR, img.rgb[2] * COLOR_FACTOR);
         colorPreview.setFillColor(brushColor);
         
-        // Обработка мыши
+        // Обработка мыши (рисования)
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isPaint && !isPipette && !sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
             int x = mousePos.x / factor;
@@ -421,6 +511,15 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+
+// Очистка cin
+void clearCin() {
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+}
+
 // Функция для создания ползунков
 void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, int value, sf::Color color, const sf::Vector2f &position) {
     // Слайдер
@@ -437,6 +536,7 @@ void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, int value,
     window.draw(slider);
     window.draw(indicator);
 }
+
 // Функция для создания кнопок
 void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position) {
     // Кнопка

@@ -1,9 +1,11 @@
 ![Logo](images/icon.png "Logo ZRGE")
 
-# ZeR Graphics Editor (ZRGE)
+# ZeR Graphic Editor (ZRGE)
 
-**ZeR Graphics Editor (ZRGE)** is a simple raster graphics editor designed to work with the [ZPIF](https://github.com/ZerTeam/ZPIF) format. Distributed under the **GPLv3** license.
+**Zer Graphic Editor (ZRGE)** is a simple raster graphic editor designed to work with the [ZPIF](https://github.com/ZerTeam/ZPIF), PNG and JPEG formats. Alpha channel is not supported. Distributed under the **GPLv3** license.
 
 ## Supported file formats
 
 - [ZPIF](https://github.com/ZerTeam/ZPIF)
+- PNG
+- JPEG(JPG)
