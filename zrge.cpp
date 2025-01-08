@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
 
     // Загрузка иконки
     sf::Image icon;
-    if (!icon.loadFromFile("./images/icon.png")) 
+    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png")) 
     {
         std::cerr << "\033[1;33mError: Failed to load icon!\033[0m" << std::endl;
         return 1;
@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     // Текстуры для кнопок
     sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture;
     // Загрузка файла в текстуру
-    if (!buttonBrushTexture.loadFromFile("images/brush.png") || !buttonEraserTexture.loadFromFile("images/eraser.png") || !buttonPlusTexture.loadFromFile("images/plus.png") || !buttonMinusTexture.loadFromFile("images/minus.png") || !buttonPipetteTexture.loadFromFile("images/pipette.png")) { 
+    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") || !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") || !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") || !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") || !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png")) { 
         std::cerr << "\033[1;31mFailed to load brush texture!\033[0m" << std::endl;
         return -1;
     }
