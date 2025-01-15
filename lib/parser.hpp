@@ -21,8 +21,8 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
     SOFTWARE.
 */
-#ifndef _PARSER_H_
-#define _PARSER_H_
+#ifndef _PARSER_HPP_
+#define _PARSER_HPP_
 
 // Библиотеки
 #include <string>

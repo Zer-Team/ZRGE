@@ -21,8 +21,8 @@
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE  
     SOFTWARE.
 */
-#ifndef _CLASSES_
-#define _CLASSES_
+#ifndef _CLASSES_HPP_
+#define _CLASSES_HPP_
 
 // Библиотеки
 #include <string>

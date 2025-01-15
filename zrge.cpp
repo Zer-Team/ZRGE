@@ -10,9 +10,9 @@
 */
 
 /*
-    GCC 14.2.1
-    SFML 2.6.2
-    C++ 20
+    GCC   14.2.1
+    SFML  2.6.2
+    C++   20
 */
 
 // Библиотеки
@@ -26,25 +26,26 @@
 
 // Собственные
 #include "./lib/classes.hpp"
+#include "./lib/draw.hpp"
 #include "./lib/parser.hpp"
 #include "./lib/save_image.hpp"
 
-#define NPOS std::string::npos // npos
-#define VERSION "1.0.0" // версия
+#define NPOS                     std::string::npos // npos
+#define VERSION                 "1.0.1" // версия
 
-#define INDENT_X 10 // Разделитель
+#define INDENT_X                10 // Разделитель
 // Размеры
 //  Просмотр цвета
-#define HEIGHT_COLOR_PREVIEW 50
+#define HEIGHT_COLOR_PREVIEW    50
 //  Слайдер
-#define WIDTH_COLOR_SLIDER 255
-#define COLOR_FACTOR 1 // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
-#define HEIGHT_COLOR_SLIDER 15
+// #define WIDTH_COLOR_SLIDER      255
+// #define HEIGHT_COLOR_SLIDER     15
+#define COLOR_FACTOR            1 // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
 //  Индикатор
-#define WIDTH_COLOR_INDICATOR 5
-#define HEIGHT_COLOR_INDICATOR 28
+// #define WIDTH_COLOR_INDICATOR   5
+// #define HEIGHT_COLOR_INDICATOR  28
 
-#define Y_SLIDER HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
+#define Y_SLIDER                HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
 
 // Объявления типов
 typedef unsigned short u_short;
@@ -58,17 +59,11 @@ using std::endl;
 // Очистка cin
 void clearCin();
 
-// Функция для создания ползунков
-void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, int value, sf::Color color, const sf::Vector2f &position);
-
-// Функция для создания кнопок
-void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position);
-
 // Главная функция
 int main(int argc, char **argv) {
     Image img; // Изображения
-    std::string filepath_temp = ".tempZRGE_file.tmp"; // Путь к временному файлу
-    std::string filepath = ""; // Путь к файлу
+    std::string filepath_temp{".tempZRGE_file.tmp"}; // Путь к временному файлу
+    std::string filepath; // Путь к файлу
     std::string stringFile; // Хранения строки файлов
     std::ifstream file; // Файл для парсинга
     u_short factor{1}; // Увеличения
@@ -80,7 +75,36 @@ int main(int argc, char **argv) {
     
     // Получения пути к файлу
     if (argc > 1)
-        filepath = argv[1];
+    {
+        for (u_short i = 1; i < argc; i++)
+        {
+            std::string arg = argv[i];
+            
+            if (arg == "-h" || arg == "--help")
+            {
+                cout << "\033[1;33mUsage: zrge [file path]\033[0m" << endl;
+                cout << "Available keys in the program:\n"
+                << "\033[1m Q\033[0m: Eraser\n"
+                << "\033[1m E\033[0m: Brush\n"
+                << "\033[1m L\033[0m: Finishing the lines\n"
+                << "\033[1m +\033[0m: Increase brush size\n"
+                << "\033[1m -\033[0m: Decrease brush size\n"
+                << "\033[1m C\033[0m: Clear canvas\n"
+                << "\033[1m CTRL\033[0m + \033[1mS\033[0m: Save image" << endl;
+                return 0;
+            }
+            else if (arg == "-v" || arg == "--version")
+            {
+                cout << "Version: \033[1m" << VERSION << "\033[0m" << endl;
+                return 0;
+            }
+            else
+            {
+                filepath = arg.data();
+                break;
+            }
+        }
+    }
     else
     {
         cout << "\033[1mEnter the path to the file: \033[0m";
@@ -230,21 +254,29 @@ int main(int argc, char **argv) {
 
     // Переменные для холста 
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
-    bool isErasing = false, isPaint = true, isSave = true, isPipette; // Для проверок
+    bool isErasing = false, isPaint = true, isSave = true, isPipette, isDrawLines = true; // Для проверок
     u_short brushSize = 5; // Размер кисти
-    bool draggingR = false, draggingG = false, draggingB = false; // Какой цвет настраивается
+    // Дорисовывания
+    sf::Vector2i prevMousePos(-1, -1); // Последняя позиция мыши
+    // Какой цвет настраивается
+    bool draggingR = false, draggingG = false, draggingB = false; 
 
     // Элементы интерфейса
     // Текстуры для кнопок
-    sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture;
-    // Загрузка файла в текстуру
-    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") || !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") || !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") || !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") || !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png")) { 
+    sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture, buttonDrawLinesTexture;
+    // Загрузка текстур кнопок
+    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") || 
+    !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") || 
+    !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") || 
+    !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") || 
+    !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
+    !buttonDrawLinesTexture.loadFromFile("/usr/share/zrge/images/draw_lines.png")) { 
         std::cerr << "\033[1;31mFailed to load brush texture!\033[0m" << std::endl;
         return -1;
     }
     
     // Кнопки
-    sf::Sprite buttonBrush, buttonEraser, buttonPipette, buttonPlus, buttonMinus;
+    sf::Sprite buttonBrush, buttonEraser, buttonPipette, buttonPlus, buttonMinus, buttonDrawLines;
     // Слайдеры
     sf::RectangleShape sliderR, sliderG, sliderB, colorPreview, indent;
     sliderR.setFillColor(sf::Color::Red);
@@ -348,6 +380,9 @@ int main(int argc, char **argv) {
                 else if (buttonMinus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
                     brushSize = std::max(brushSize - 3, 1);
                 }
+                else if (buttonDrawLines.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                    isDrawLines =!isDrawLines;
+                }
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                     img.rgb[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
@@ -409,6 +444,10 @@ int main(int argc, char **argv) {
                 else if (event.key.code == sf::Keyboard::Q) {
                     isErasing = true;
                 }
+                // Ластик
+                else if (event.key.code == sf::Keyboard::L) {
+                    isDrawLines = !isDrawLines;
+                }
                 // Очистка
                 else if (event.key.code == sf::Keyboard::C) {
                     canvas.create(img.width, img.height, sf::Color::White);
@@ -458,39 +497,66 @@ int main(int argc, char **argv) {
         brushColor = sf::Color(img.rgb[0] * COLOR_FACTOR, img.rgb[1] * COLOR_FACTOR, img.rgb[2] * COLOR_FACTOR);
         colorPreview.setFillColor(brushColor);
         
-        // Обработка мыши (рисования)
+        // Рисование мышью
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isPaint && !isPipette && !sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-            int x = mousePos.x / factor;
-            int y = mousePos.y / factor;
+            int x = mousePos.x;
+            int y = mousePos.y;
 
             if (x >= 0 && x < img.width && y >= 0 && y < img.height) {
                 sf::Color colorToUse = isErasing ? sf::Color::White : brushColor;
 
-                for (int i = -brushSize; i <= brushSize; ++i) {
-                    for (int j = -brushSize; j <= brushSize; ++j) {
-                        // Проверяем, находится ли точка внутри круга
-                        if (i * i + j * j <= brushSize * brushSize) {
-                            int drawX = x + i;
-                            int drawY = y + j;
+                if (isDrawLines && prevMousePos.x != -1 && prevMousePos.y != -1) {
+                    // Линия между предыдущей и текущей позицией
+                    sf::Vector2i diff = mousePos - prevMousePos;
+                    int steps = std::max(std::abs(diff.x), std::abs(diff.y));
 
-                            if (drawX >= 0 && drawX < img.width && drawY >= 0 && drawY < img.height) {
-                                canvas.setPixel(drawX, drawY, colorToUse);
+                    for (int step = 0; step <= steps; ++step) {
+                        float t = static_cast<float>(step) / steps;
+                        int drawX = static_cast<int>(prevMousePos.x + t * diff.x);
+                        int drawY = static_cast<int>(prevMousePos.y + t * diff.y);
+
+                        for (int i = -brushSize; i <= brushSize; ++i) {
+                            for (int j = -brushSize; j <= brushSize; ++j) {
+                                if (i * i + j * j <= brushSize * brushSize) {
+                                    int pixelX = drawX + i;
+                                    int pixelY = drawY + j;
+
+                                    if (pixelX >= 0 && pixelX < static_cast<int>(img.width) && pixelY >= 0 && pixelY < static_cast<int>(img.height)) {
+                                        canvas.setPixel(pixelX, pixelY, colorToUse);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Только текущая позиция мыши
+                    for (int i = -brushSize; i <= brushSize; ++i) {
+                        for (int j = -brushSize; j <= brushSize; ++j) {
+                            if (i * i + j * j <= brushSize * brushSize) {
+                                int pixelX = x + i;
+                                int pixelY = y + j;
+
+                                if (pixelX >= 0 && pixelX < static_cast<int>(img.width) && pixelY >= 0 && pixelY < static_cast<int>(img.height)) {
+                                    canvas.setPixel(pixelX, pixelY, colorToUse);
+                                }
                             }
                         }
                     }
                 }
 
+                prevMousePos = mousePos;
                 texture.update(canvas);
-                isSave = false;
             }
-        }
 
-        window.clear(sf::Color(120, 120, 120));
+            isSave = false;
+        } else {
+            prevMousePos = {-1, -1};
+        }
+        
+        window.clear(sf::Color(120, 120, 120)); // Очистка окна (цвет фона интерфейса)
         window.draw(sprite);
         window.draw(indent);
-        window.draw(buttonEraser);
-        window.draw(buttonBrush);
         window.draw(colorPreview);
 
         // Создание слайдеров
@@ -504,6 +570,7 @@ int main(int argc, char **argv) {
         drawButton(window, buttonPipetteTexture, buttonPipette, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*2, Y_SLIDER*7));
         drawButton(window, buttonPlusTexture, buttonPlus, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*3, Y_SLIDER*7));
         drawButton(window, buttonMinusTexture, buttonMinus, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*4, Y_SLIDER*7));
+        drawButton(window, buttonDrawLinesTexture, buttonDrawLines, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X, Y_SLIDER*8 + 40));
 
         window.display();
     }
@@ -518,30 +585,4 @@ void clearCin() {
         cin.clear();
         cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-}
-
-// Функция для создания ползунков
-void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, int value, sf::Color color, const sf::Vector2f &position) {
-    // Слайдер
-    slider.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER, HEIGHT_COLOR_SLIDER));// Ширина Высота
-    slider.setFillColor(color);
-    slider.setPosition(position);
-    
-    // Ползунок
-    sf::RectangleShape indicator(sf::Vector2f(WIDTH_COLOR_INDICATOR, HEIGHT_COLOR_INDICATOR));// Ширина Высота
-    indicator.setFillColor(sf::Color::Black);
-    indicator.setPosition(position.x + value, position.y - WIDTH_COLOR_INDICATOR);// Минус ширина
-
-    // Отрисовка
-    window.draw(slider);
-    window.draw(indicator);
-}
-
-// Функция для создания кнопок
-void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position) {
-    // Кнопка
-    button.setTexture(texture);
-    button.setPosition(position.x, position.y);
-    // Отрисовка
-    window.draw(button);
 }
