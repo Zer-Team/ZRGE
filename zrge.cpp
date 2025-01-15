@@ -499,7 +499,12 @@ int main(int argc, char **argv) {
         
         // Рисование мышью
         if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isPaint && !isPipette && !sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window); 
+
+            // Нормализация координат мыши
+            mousePos.x /= factor;
+            mousePos.y /= factor;
+
             int x = mousePos.x;
             int y = mousePos.y;
 
