@@ -30,7 +30,7 @@
 #include "./lib/parser.hpp"
 #include "./lib/save_image.hpp"
 
-#define NPOS                     std::string::npos // npos
+#define NPOS                    std::string::npos // npos
 #define VERSION                 "1.0.1" // версия
 
 #define INDENT_X                10 // Разделитель
@@ -56,8 +56,17 @@ using std::cerr;
 using std::cin;
 using std::endl;
 
-// Очистка cin
-void clearCin();
+template <typename T>
+
+// Функция для вывода чисел
+void getNumberAndChar(T &num)
+{
+    // Запрос
+    cin >> num;
+    // Очистка
+    cin.clear();
+    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
 
 // Главная функция
 int main(int argc, char **argv) {
@@ -116,7 +125,7 @@ int main(int argc, char **argv) {
     {
         // Запрос увлечения
         cout << "Enter canvas factor: ";
-        cin >> factor;
+        getNumberAndChar(factor);
 
         // Заполнение структуры изображения
         //  Формат изображения PNG
@@ -165,21 +174,21 @@ int main(int argc, char **argv) {
         char createFile{'\0'};
         cout << "File does not exist create? [Y/n] ";
 
-        cin >> createFile;
+        getNumberAndChar(createFile);
 
         if (createFile!='Y'&&createFile!='y')
             return 0;
 
         // Запрос данных
         cout << "Enter canvas width: ";
-        cin >> img.width;
+        getNumberAndChar(img.width);
         cout << "Enter canvas height: ";
-        cin >> img.height;
+        getNumberAndChar(img.height);
         cout << "Enter canvas factor: ";
-        cin >> factor;
+        getNumberAndChar(factor);
         // Запрос на использование сжатия
         cout << "\033[1mUse RLE compression? [Y/n] \033[0m";
-        cin >> img.compression;
+        getNumberAndChar(img.compression);
         if (img.compression.find('y') != NPOS || img.compression.find('Y') != NPOS)
             img.compression = "rle";
         else
@@ -343,16 +352,14 @@ int main(int argc, char **argv) {
             if (event.type == sf::Event::Closed || event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 if (isSave == false) 
                 {
-                    std::string answer;
-                    
-                    clearCin();
+                    char answer;
                     
                     // Запрос на сохранения изображения
                     cout << "Save image? [Y/n] ";
-                    cin >> answer;
-                    if (answer.find('y')!= NPOS || answer.find('Y')!= NPOS)
+                    getNumberAndChar(answer);
+                    if (answer == 'Y' || answer == 'y')
                     {
-                        Error = saveImage(canvas, img, filepath, filepath_temp, Error);
+                        Error = saveImageZPIF(canvas, img, filepath, filepath_temp, Error);
                         if (Error < 0)
                             return 1;
                     }
@@ -463,17 +470,21 @@ int main(int argc, char **argv) {
                 }            
                 // Сохранение
                 else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+                    // Проверка нажатия Shift
                     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
                     {
+                        // Запрос нового названия файла
                         cout << "\033[1mEnter a new file name: \033[0m";
-                        clearCin();
                         getline(cin, filepath);
+
+                        // Получения нового формата файла
                         if (filepath.substr(filepath.length() - 4) == ".png") img.format="png";
-                        if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg") img.format="png";
-                        if (filepath.substr(filepath.length() - 5) == ".zpif") img.format="zpif";
+                        else if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg") img.format="jpg";
+                        else if (filepath.substr(filepath.length() - 5) == ".zpif") img.format="zpif";
                     }
 
-                    if (img.format=="png" || img.format=="png") 
+                    // Сохранение PNG и JPG 
+                    if (img.format=="png" || img.format=="jpg") 
                     {
                         if (canvas.saveToFile(filepath)) {
                             cout << "\033[32mImage saved successfully.\033[0m" << endl;
@@ -482,9 +493,10 @@ int main(int argc, char **argv) {
                             return 1;
                         }
                     }
+                    // Сохранение ZPIF
                     else if (img.format=="zpif")
                     {
-                        Error = saveImage(canvas, img, filepath, filepath_temp, Error);
+                        Error = saveImageZPIF(canvas, img, filepath, filepath_temp, Error);
                         if (Error < 0)
                             return 1;
                     }
@@ -583,11 +595,6 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-
-// Очистка cin
-void clearCin() {
-    if (cin.fail()) {
-        cin.clear();
-        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-}
+///////////////////////////////////////////////////
+/// ID: HM0100, Version: 1.0.1, Date: 2025-01-16, Author: Zer Team.
+///////////////////////////////////////////////////
