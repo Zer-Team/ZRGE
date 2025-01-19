@@ -48,6 +48,7 @@ bool containsChar(const std::string& str, char ch) {
     return str.find(ch) != NPOS;
 }
 
+// Функция для проверки существования заданного текста в строке
 bool containsString(const std::string& str, const std::string& text) {
     return str.find(text) != NPOS;
 }
@@ -90,14 +91,14 @@ char parserParam(std::string &str, Image &img)
         // Создания объекта и присвоения значений
         Parameter param{extractContent(str, '{', '}'), extractContent(str, '(', ')')};
         // Получения данных
-        if (containsString(param.getName(), "m"))
+        if (param.getName()[0] == 'm')
             img.mode = param.getValue();
-        if (containsString(param.getName(), "c"))
+        else if (param.getName()[0] == 'c')
             img.compression = param.getValue();
         // Получения размеров
-        if (containsString(param.getName(), "w"))
+        else if (param.getName()[0] == 'w')
             img.width = std::strtoul((param.getValue().data()), nullptr, 10);
-        if (containsString(param.getName(), "h"))
+        else if (param.getName()[0] == 'h')
             img.height = std::strtoul((param.getValue().data()), nullptr, 10);
     }
     

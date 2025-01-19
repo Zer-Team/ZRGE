@@ -27,7 +27,6 @@
 // Библиотеки
 #include <string>
 
-
 // Объявления типов
 typedef unsigned short u_short;
 typedef unsigned int u_int;
@@ -56,7 +55,6 @@ class Parameter
 {
     std::string name; // Имя
     std::string value; // Значение
-
 public:
     // Конструкторы для присвоения имени и значения
     Parameter() : name(""), value("")

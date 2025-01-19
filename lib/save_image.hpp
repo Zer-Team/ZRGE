@@ -72,12 +72,8 @@ char savingImage(std::string &filename, sf::Image &image, Image &img)
 // Сохранение изображения
 char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp, char &Error)
 {
-    // Очистка
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
     // Проверка на сжатие
-    if (img.compression.find("rle") != NPOS)
+    if (img.compression == "rle")
     {
         // Запись данных в tmp файл
         cout << "Writing data to a temporary file..." << std::endl;

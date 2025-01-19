@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
         // Запрос на использование сжатия
         cout << "\033[1mUse RLE compression? [Y/n] \033[0m";
         getNumberAndChar(img.compression);
-        if (img.compression.find('y') != NPOS || img.compression.find('Y') != NPOS)
+        if (img.compression == "y" || img.compression == "Y")
             img.compression = "rle";
         else
             img.compression = "0";
@@ -342,7 +342,7 @@ int main(int argc, char **argv) {
         img.rgb[0] = img.rgb[1] = img.rgb[2] = 0;
     }
     
-    // Цикл программы
+    // Цикл программы (окна)
     while (window.isOpen()) {
         sf::Event event;
         // Обработка событий
