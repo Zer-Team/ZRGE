@@ -9,11 +9,18 @@
 
 */
 
-/*
-    GCC   14.2.1
-    SFML  2.6.2
-    C++   20
-*/
+/////////////////////////////////////////////////////
+///  GCC   14.2.1                                 ///
+///  SFML  2.6.2                                  ///
+///  C++   20                                     ///
+/////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+///  ID: HM0100                                   ///
+///  Version: 1.0.1                               ///
+///  Date: 2025-01-21                             ///
+///  Author: Zer Team                             ///
+/////////////////////////////////////////////////////
 
 // Библиотеки
 #include <SFML/Graphics.hpp>
@@ -25,27 +32,23 @@
 #include <limits>
 
 // Собственные
-#include "./lib/classes.hpp"
-#include "./lib/draw.hpp"
-#include "./lib/parser.hpp"
-#include "./lib/save_image.hpp"
+#include "./include/classes.hpp"
+#include "./include/draw.hpp"
+#include "./include/parser.hpp"
+#include "./include/save_image.hpp"
 
-#define NPOS                    std::string::npos // npos
-#define VERSION                 "1.0.1" // версия
+#define VERSION               "1.0.2 TEST" // Версия
 
-#define INDENT_X                10 // Разделитель
+#define INDENT_X              10                                               // Разделитель
 // Размеры
 //  Просмотр цвета
-#define HEIGHT_COLOR_PREVIEW    50
-//  Слайдер
-// #define WIDTH_COLOR_SLIDER      255
-// #define HEIGHT_COLOR_SLIDER     15
-#define COLOR_FACTOR            1 // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
-//  Индикатор
-// #define WIDTH_COLOR_INDICATOR   5
-// #define HEIGHT_COLOR_INDICATOR  28
+#define HEIGHT_COLOR_PREVIEW  50
 
-#define Y_SLIDER                HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
+#define COLOR_FACTOR          1                                                // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
+
+//  Индикатор и слайдер в ./include/draw.hpp
+
+#define Y_SLIDER              HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
 
 // Объявления типов
 typedef unsigned short u_short;
@@ -263,29 +266,47 @@ int main(int argc, char **argv) {
 
     // Переменные для холста 
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
-    bool isErasing = false, isPaint = true, isSave = true, isPipette, isDrawLines = true; // Для проверок
-    u_short brushSize = 5; // Размер кисти
-    // Дорисовывания
+    //   Для проверок
+    bool isErasing = false,          // Стёрка (false)
+         isPaint = true,             // Рисование (true)
+         isSave = true,              // Сохранено (true)
+         isPipette = false,          // Пипетка (false)
+         isDrawingRect = false,      // Рисования квадрата (false)
+         isDrawingOval = false,      // Рисования овала (false)
+         isFigureBeingDrawn = false; // Предпросмотр фигур (false)
+    //   Размер кисти
+    u_short brushSize = 5;
+    //   Дорисовывания
     sf::Vector2i prevMousePos(-1, -1); // Последняя позиция мыши
-    // Какой цвет настраивается
+    //   Предпросмотр фигур
+    sf::Vector2i figuresStart(-1, -1), figuresEnd(-1, -1); // Первая и последняя позиции курсора для рисования фигур
+    //      Объект для предпросмотра рисования фигур
+    sf::RectangleShape previewFigures;
+    //      Настройки объекта
+    previewFigures.setFillColor(sf::Color::Transparent); // Цвет фона
+    previewFigures.setOutlineThickness(5/factor);               // Размер контура
+    previewFigures.setOutlineColor(sf::Color::Red);      // Цвет контура
+    //   Какой цвет настраивается
     bool draggingR = false, draggingG = false, draggingB = false; 
 
     // Элементы интерфейса
     // Текстуры для кнопок
-    sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture, buttonDrawLinesTexture;
+    sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture, buttonDrawRectTexture, buttonDrawOvalTexture;
     // Загрузка текстур кнопок
     if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") || 
-    !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") || 
-    !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") || 
-    !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") || 
-    !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
-    !buttonDrawLinesTexture.loadFromFile("/usr/share/zrge/images/draw_lines.png")) { 
-        std::cerr << "\033[1;31mFailed to load brush texture!\033[0m" << std::endl;
+        !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") || 
+        !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") || 
+        !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") || 
+        !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
+        !buttonDrawRectTexture.loadFromFile("images/draw_rect.png") ||
+        !buttonDrawOvalTexture.loadFromFile("images/draw_oval.png"))
+    { 
+        std::cerr << "\033[1;31mFailed to load image!\033[0m" << std::endl;
         return -1;
     }
     
     // Кнопки
-    sf::Sprite buttonBrush, buttonEraser, buttonPipette, buttonPlus, buttonMinus, buttonDrawLines;
+    sf::Sprite buttonBrush, buttonEraser, buttonPipette, buttonPlus, buttonMinus, buttonDrawRect, buttonDrawOval;
     // Слайдеры
     sf::RectangleShape sliderR, sliderG, sliderB, colorPreview, indent;
     sliderR.setFillColor(sf::Color::Red);
@@ -369,27 +390,31 @@ int main(int argc, char **argv) {
                 return 0;
             }
             
-            // Нажатие кнопок мыши
+            // Мышь
+            //   Нажатие кнопок мыши
             if (event.type == sf::Event::MouseButtonPressed) {
                 // Кнопки
-                if (buttonBrush.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
-                    isErasing = false;
-                }
-                else if (buttonEraser.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                //   Кисть
+                if (buttonBrush.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
+                    isErasing = false, isDrawingRect = false, isDrawingOval = false;
+                //   Ластик
+                else if (buttonEraser.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
                     isErasing = true;
-                }
-                else if (buttonPipette.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                //   Пипетка
+                else if (buttonPipette.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
                     isPipette = true;
-                }
-                else if (buttonPlus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                //   Плюс (размер кисти)
+                else if (buttonPlus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
                     brushSize = std::min(brushSize + 3, 50);
-                }
-                else if (buttonMinus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
+                //   Минус (размер кисти)
+                else if (buttonMinus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) 
                     brushSize = std::max(brushSize - 3, 1);
-                }
-                else if (buttonDrawLines.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y))) {
-                    isDrawLines =!isDrawLines;
-                }
+                //   Рисования прямоугольников
+                else if (buttonDrawRect.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
+                    isDrawingRect = true, isDrawingOval = false;
+                //   Рисования овалов
+                else if (buttonDrawOval.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
+                    isDrawingOval = true, isDrawingRect = false;
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                     img.rgb[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
@@ -397,13 +422,16 @@ int main(int argc, char **argv) {
 
                 } else if (sliderG.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                     img.rgb[1] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
-                    draggingG = true; isPaint = false;
-
+                    draggingG = true;
+                    isPaint = false;
                 } else if (sliderB.getGlobalBounds().contains(mousePos.x, mousePos.y)) {
                     img.rgb[2] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
-                    draggingB = true; isPaint = false;
-
+                    draggingB = true;
+                    isPaint = false;
                 }
+                // Рисование фигур
+                if ((isDrawingRect || isDrawingOval) && event.mouseButton.button == sf::Mouse::Left)
+                    figuresStart = sf::Mouse::getPosition(window), isFigureBeingDrawn = true;
                 // Пипетка CTRL
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl) && (mousePos.x/factor <= img.width && mousePos.y/factor <= img.height)) {
                     brushColor = canvas.getPixel(mousePos.x/factor, mousePos.y/factor);
@@ -414,7 +442,7 @@ int main(int argc, char **argv) {
                     isPipette = false;
                 }
             }
-            // Отжатие кнопок мыши
+            //   Отжатие кнопок мыши
             if (event.type == sf::Event::MouseButtonReleased) {
                 // Пипетка
                 if (isPipette && (mousePos.x/factor <= img.width && mousePos.y/factor <= img.height)) {
@@ -425,6 +453,67 @@ int main(int argc, char **argv) {
                     img.rgb[2] = brushColor.b / COLOR_FACTOR;
                     isPipette = false;
                 }
+                // Рисование фигур
+                //   Прямоугольник
+                else if (isDrawingRect && event.mouseButton.button == sf::Mouse::Left)
+                {
+                    figuresEnd = sf::Mouse::getPosition(window);
+                    
+                    // Нормализация координат
+                    figuresStart.x /= factor, figuresStart.y /= factor, figuresEnd.x /= factor, figuresEnd.y /= factor;
+                    
+                    int rectWidth = figuresEnd.x - figuresStart.x, rectHeight = figuresEnd.y - figuresStart.y;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
+                        rectWidth = rectHeight;
+                    if (rectWidth < 0)
+                        figuresStart.x += rectWidth, rectWidth = -rectWidth;
+                    if (rectHeight < 0)
+                        figuresStart.y += rectHeight, rectHeight = -rectHeight;
+                    for (int x = figuresStart.x; x < figuresStart.x + rectWidth; ++x)
+                    {
+                        for (int y = figuresStart.y; y < figuresStart.y + rectHeight; ++y)
+                        {
+                            if (x >= 0 && x < img.width && y >= 0 && y < img.height)
+                                canvas.setPixel(x, y, brushColor);
+                        }
+                    }
+                    texture.update(canvas);
+                    isFigureBeingDrawn = false;
+                }
+                //   Овал
+                else if (isDrawingOval && event.mouseButton.button == sf::Mouse::Left)
+                {
+                    figuresEnd = sf::Mouse::getPosition(window);
+
+                    // Нормализация координат
+                    figuresStart.x /= factor, figuresStart.y /= factor, figuresEnd.x /= factor, figuresEnd.y /= factor;
+
+                    int rectWidth = figuresEnd.x - figuresStart.x, rectHeight = figuresEnd.y - figuresStart.y;
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
+                        rectWidth = rectHeight;
+                    if (rectWidth < 0)
+                        figuresStart.x += rectWidth, rectWidth = -rectWidth;
+                    if (rectHeight < 0)
+                        figuresStart.y += rectHeight, rectHeight = -rectHeight;
+                    int centerX = figuresStart.x + rectWidth / 2, centerY = figuresStart.y + rectHeight / 2, radiusX = rectWidth / 2, radiusY = rectHeight / 2;
+                    float radiusXSq = static_cast<float>(radiusX * radiusX);
+                    float radiusYSq = static_cast<float>(radiusY * radiusY);
+                    for (int y = -radiusY; y <= radiusY; ++y)
+                    {
+                        for (int x = -radiusX; x <= radiusX; ++x)
+                        {
+                            if ((x * x) / radiusXSq + (y * y) / radiusYSq <= 1.0f)
+                            {
+                                int pixelX = centerX + x, pixelY = centerY + y;
+                                if (pixelX >= 0 && pixelX < img.width && pixelY >= 0 && pixelY < img.height)
+                                    canvas.setPixel(pixelX, pixelY, brushColor);
+                            }
+                        }
+                    }
+                    texture.update(canvas);
+                    isFigureBeingDrawn = false;
+                }
+            
                 draggingR = draggingG = draggingB = false;
                 isPaint = true;
             } 
@@ -445,16 +534,17 @@ int main(int argc, char **argv) {
             else if (event.type == sf::Event::KeyPressed) {
                 // Кисточка
                 if (event.key.code == sf::Keyboard::E) {
-                    isErasing = false;
+                    isErasing = isDrawingOval = isDrawingRect = false;
                 }
                 // Ластик
-                else if (event.key.code == sf::Keyboard::Q) {
+                else if (event.key.code == sf::Keyboard::Q) 
                     isErasing = true;
-                }
-                // Ластик
-                else if (event.key.code == sf::Keyboard::L) {
-                    isDrawLines = !isDrawLines;
-                }
+                // Рисования прямоугольников
+                else if (event.key.code == sf::Keyboard::R)
+                    isDrawingRect = true, isDrawingOval = false;
+                // Рисования овалов
+                else if (event.key.code == sf::Keyboard::O)
+                    isDrawingOval = true, isDrawingRect = false;
                 // Очистка
                 else if (event.key.code == sf::Keyboard::C) {
                     canvas.create(img.width, img.height, sf::Color::White);
@@ -510,7 +600,7 @@ int main(int argc, char **argv) {
         colorPreview.setFillColor(brushColor);
         
         // Рисование мышью
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isPaint && !isPipette && !sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && isPaint && !isPipette && !isDrawingOval && !isDrawingRect && !sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) {
             sf::Vector2i mousePos = sf::Mouse::getPosition(window); 
 
             // Нормализация координат мыши
@@ -523,7 +613,7 @@ int main(int argc, char **argv) {
             if (x >= 0 && x < img.width && y >= 0 && y < img.height) {
                 sf::Color colorToUse = isErasing ? sf::Color::White : brushColor;
 
-                if (isDrawLines && prevMousePos.x != -1 && prevMousePos.y != -1) {
+                if (prevMousePos.x != -1 && prevMousePos.y != -1) {
                     // Линия между предыдущей и текущей позицией
                     sf::Vector2i diff = mousePos - prevMousePos;
                     int steps = std::max(std::abs(diff.x), std::abs(diff.y));
@@ -567,12 +657,33 @@ int main(int argc, char **argv) {
             }
 
             isSave = false;
-        } else {
+        } else { 
             prevMousePos = {-1, -1};
         }
         
-        window.clear(sf::Color(120, 120, 120)); // Очистка окна (цвет фона интерфейса)
+        // Предпросмотр фигур
+        if (isFigureBeingDrawn)
+        {
+            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+
+            // Ширина и высота прямоугольника
+            int rectWidth = mousePos.x - figuresStart.x, rectHeight = mousePos.y - figuresStart.y;
+            // Квадрат если зажата Shift
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
+                rectWidth = rectHeight;
+
+            // Отрисовка превью фигуры
+            previewFigures.setPosition(figuresStart.x, figuresStart.y), previewFigures.setSize(sf::Vector2f(rectWidth, rectHeight));
+        }
+
+        // Очистка окна (цвет фона интерфейса)
+        window.clear(sf::Color(120, 120, 120)); 
+        // Отрисовка элементов
         window.draw(sprite);
+        //   Предпросмотр фигур
+        if (isFigureBeingDrawn)
+            window.draw(previewFigures);
+        //   Интерфеис
         window.draw(indent);
         window.draw(colorPreview);
 
@@ -582,19 +693,23 @@ int main(int argc, char **argv) {
         drawSlider(window, sliderB, img.rgb[2], sf::Color::Blue, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10*3));
 
         // Создание кнопок
+        //   1
         drawButton(window, buttonBrushTexture, buttonBrush, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X, Y_SLIDER*7));
         drawButton(window, buttonEraserTexture, buttonEraser, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + 26+20, Y_SLIDER*7));
         drawButton(window, buttonPipetteTexture, buttonPipette, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*2, Y_SLIDER*7));
         drawButton(window, buttonPlusTexture, buttonPlus, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*3, Y_SLIDER*7));
         drawButton(window, buttonMinusTexture, buttonMinus, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26+20)*4, Y_SLIDER*7));
-        drawButton(window, buttonDrawLinesTexture, buttonDrawLines, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X, Y_SLIDER*8 + 40));
+        //   2
+        drawButton(window, buttonDrawRectTexture, buttonDrawRect, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X, Y_SLIDER*8 + 40));
+        drawButton(window, buttonDrawOvalTexture, buttonDrawOval, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X  + 26+20, Y_SLIDER*8 + 40));
 
+        // Отрисовка окна
         window.display();
     }
 
-    return 0;
+    return 0; 
 }
 
-///////////////////////////////////////////////////
-/// ID: HM0100, Version: 1.0.1, Date: 2025-01-16, Author: Zer Team.
-///////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+///                   ID: HM0100                   ///
+//////////////////////////////////////////////////////
