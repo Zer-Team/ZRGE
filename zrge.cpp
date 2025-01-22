@@ -465,7 +465,7 @@ int main(int argc, char **argv)
                     isDrawingOval = true, isDrawingRect = isErasing = false;
                 //   Заливка цветом
                 else if (isPouring && mousePos.x >= 0 && mousePos.x / factor < img.width && mousePos.y >= 0 && mousePos.y / factor < img.height) 
-                    fillColor(mousePos.x / factor, mousePos.y / factor, brushColor);
+                    fillColor(mousePos.x / factor, mousePos.y / factor, brushColor), isSave = false;
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
@@ -539,7 +539,7 @@ int main(int argc, char **argv)
                         }
                     }
                     texture.update(canvas);
-                    isFigureBeingDrawn = false;
+                    isFigureBeingDrawn = isSave = false;
                 }
                 //   Овал
                 else if (isDrawingOval && isFigureBeingDrawn && event.mouseButton.button == sf::Mouse::Left && figuresStart.x / factor < img.width)
@@ -572,7 +572,7 @@ int main(int argc, char **argv)
                         }
                     }
                     texture.update(canvas);
-                    isFigureBeingDrawn = false;
+                    isFigureBeingDrawn = isSave = false;
                 }
 
                 draggingR = draggingG = draggingB = false;
