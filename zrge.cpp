@@ -317,7 +317,7 @@ int main(int argc, char **argv)
     sf::RectangleShape previewFigures;
     //      Настройки объекта
     previewFigures.setFillColor(sf::Color::Transparent); // Цвет фона
-    previewFigures.setOutlineThickness(5 / factor);      // Размер контура
+    previewFigures.setOutlineThickness(2);      // Размер контура
     previewFigures.setOutlineColor(sf::Color::Red);      // Цвет контура
     //   Какой цвет настраивается
     bool draggingR = false, draggingG = false, draggingB = false;
@@ -464,8 +464,8 @@ int main(int argc, char **argv)
                 else if (buttonDrawOval.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
                     isDrawingOval = true, isDrawingRect = isErasing = false;
                 //   Заливка цветом
-                else if (isPouring && mousePos.x >= 0 && mousePos.x < img.width && mousePos.y >= 0 && mousePos.y < img.height) 
-                    fillColor(mousePos.x, mousePos.y, brushColor);
+                else if (isPouring && mousePos.x >= 0 && mousePos.x / factor < img.width && mousePos.y >= 0 && mousePos.y / factor < img.height) 
+                    fillColor(mousePos.x / factor, mousePos.y / factor, brushColor);
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
@@ -516,7 +516,7 @@ int main(int argc, char **argv)
                 }
                 // Рисование фигур
                 //   Прямоугольник
-                else if (isDrawingRect && isFigureBeingDrawn && event.mouseButton.button == sf::Mouse::Left && figuresStart.x < img.width)
+                else if (isDrawingRect && isFigureBeingDrawn && event.mouseButton.button == sf::Mouse::Left && figuresStart.x / factor < img.width)
                 {
                     figuresEnd = sf::Mouse::getPosition(window);
 
@@ -542,7 +542,7 @@ int main(int argc, char **argv)
                     isFigureBeingDrawn = false;
                 }
                 //   Овал
-                else if (isDrawingOval && isFigureBeingDrawn && event.mouseButton.button == sf::Mouse::Left && figuresStart.x < img.width)
+                else if (isDrawingOval && isFigureBeingDrawn && event.mouseButton.button == sf::Mouse::Left && figuresStart.x / factor < img.width)
                 {
                     figuresEnd = sf::Mouse::getPosition(window);
 
@@ -759,7 +759,7 @@ int main(int argc, char **argv)
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
             // Ширина и высота прямоугольника
-            int rectWidth = (mousePos.x > img.width ? img.width : mousePos.x ) - figuresStart.x, rectHeight = mousePos.y - figuresStart.y;
+            int rectWidth = (mousePos.x / factor > img.width ? img.width : mousePos.x) - figuresStart.x, rectHeight = mousePos.y - figuresStart.y;
             // Квадрат если зажата Shift
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
                 rectWidth = rectHeight;
@@ -773,7 +773,7 @@ int main(int argc, char **argv)
         // Отрисовка элементов
         window.draw(sprite);
         //   Предпросмотр фигур
-        if (isFigureBeingDrawn && figuresStart.x < img.width && !isPipette)
+        if (isFigureBeingDrawn && figuresStart.x / factor < img.width && !isPipette)
             window.draw(previewFigures);
         //   Интерфеис
         window.draw(indent);
