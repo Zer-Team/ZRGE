@@ -105,7 +105,7 @@ signed char parserParams(Image &img, const std::string &filepath)
 
     if (str != "\xDDZPIF")
     {
-        cerr << "\033[1;31mError 1: The file is damaged or the format is not supported.TX\033[0m" << std::endl;
+        cerr << "\033[1;31mError 1: The file is damaged or the format is not supported.\033[0m" << std::endl;
         return -1;
     }
     

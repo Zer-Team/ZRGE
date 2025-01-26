@@ -38,7 +38,7 @@
 #include "./include/save_image.hpp"
 
 // Макросы
-#define VERSION               "1.0.3 TEST"                                          // Версия
+#define VERSION               "1.0.3"                                          // Версия
 #define INDENT_X              10                                               // Разделитель
 // Размеры
 //  Просмотр цвета
