@@ -217,7 +217,7 @@ int main(int argc, char **argv)
     // Загрузка иконки и фона
     sf::Image icon;
     sf::Texture backgroundTexture;
-    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png") || !backgroundTexture.loadFromFile("images/background.jpg"))
+    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png") || !backgroundTexture.loadFromFile("/usr/share/zrge/images/background.jpg"))
     {
         std::cerr << "\033[1;31mError: Failed to load image!\033[0m" << std::endl;
         return 1;
