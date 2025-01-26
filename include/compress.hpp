@@ -23,7 +23,7 @@ using std::cerr;
 using std::endl;
 
 // Сжатие
-char compress_rle(std::string &input, std::string &output, Image &img) {
+signed char compress_rle(std::string &input, std::string &output, Image &img) {
     // Объявления
     std::string line; // Строка из файла
     std::string buffer; // Строка для записи в файл 
@@ -31,13 +31,12 @@ char compress_rle(std::string &input, std::string &output, Image &img) {
     bool header_written = false; // Идут ли данные о пикселях
     
     // Открытие файлов
-    std::ifstream input_file(input); // tmp файл или файл для чтения данных
+    std::ifstream input_file(input, std::ios::binary); // tmp файл или файл для чтения данных
     std::ofstream output_file(output, std::ios::binary); // Файл для записи
 
     // Запись параметров в файл
-    output_file << "{f}" << '(' << img.format << ")\n";
+    output_file << '\xDD' << "ZPIF" << "\n";
     output_file << "{c}" << '(' << img.compression << ")\n";
-    output_file << "{m}" << '(' << img.mode << ")\n";
     output_file << "{w}" << '(' << img.width << ")\n";
     output_file << "{h}" << '(' << img.height << ")\n";
 

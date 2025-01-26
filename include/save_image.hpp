@@ -30,7 +30,7 @@ using std::cerr;
 using std::endl;
 
 // Запись данных в изображения
-char savingImage(std::string &filename, sf::Image &image, Image &img)
+signed char savingImage(std::string &filename, sf::Image &image, Image &img)
 {
     std::ofstream file(filename, std::ios::binary); // Открытия файла на запись
 
@@ -43,9 +43,8 @@ char savingImage(std::string &filename, sf::Image &image, Image &img)
     // Проверка на сжатие   если оно есть то эти данные не нужны (потому что запись идёт в tmp файл)
     if (img.compression == "0")
     {
-        file << "{f}" << '(' << img.format << ")\n";
+        file << '\xDD' << "ZPIF" << "\n";
         file << "{c}" << '(' << img.compression << ")\n";
-        file << "{m}" << '(' << img.mode << ")\n";
         file << "{w}" << '(' << img.width << ")\n";
         file << "{h}" << '(' << img.height << ")\n";
     }
@@ -57,7 +56,7 @@ char savingImage(std::string &filename, sf::Image &image, Image &img)
     for (u_int i = 0; i < img.width*img.height; i++)
     {
         sf::Color pixelColor = image.getPixel((i % img.width), (i / img.width));
-        file << '[' << pixelColor.r << pixelColor.g << pixelColor.b << "]\n";
+        file << '[' << pixelColor.r << pixelColor.g << pixelColor.b << pixelColor.a << "]\n";
         img.point++;
     }
     
@@ -70,23 +69,21 @@ char savingImage(std::string &filename, sf::Image &image, Image &img)
 }
 
 // Сохранение изображения
-char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp, char &Error)
+signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp)
 {
     // Проверка на сжатие
     if (img.compression == "rle")
     {
         // Запись данных в tmp файл
         cout << "Writing data to a temporary file..." << std::endl;
-        Error = savingImage(filename_temp, canvas, img);
-                    
-        if (Error < 0)
+       
+        if (savingImage(filename_temp, canvas, img) < 0)
             return -1;
 
         // Запись с сжатием из tmp файла в основной 
         cout << "Create, record and compress image..." << endl;
-        Error = compress_rle(filename_temp, filename, img);
                     
-        if (Error < 0)
+        if (compress_rle(filename_temp, filename, img) < 0)
             return -1;
 
         // Удаление tmp файла
@@ -97,8 +94,7 @@ char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::st
     {
         // Запись данных в основной файл
         cout << "Writing data to file..." << std::endl;
-        Error = savingImage(filename, canvas, img);
-        if (Error < 0)
+        if (savingImage(filename, canvas, img) < 0)
             return -1;
     }
     

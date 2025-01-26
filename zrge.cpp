@@ -6,7 +6,6 @@
     This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
-
 */
 
 ////////////////////////////////////////////////////////////////
@@ -17,15 +16,14 @@
 
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0100                        ///
-///                      Version: 1.0.2                      ///
-///                     Date: 2025-01-22                     ///
+///                      Version: 1.0.3                      ///
+///                     Date: 2025-01-26                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
 // Библиотеки
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <fstream>
 #include <vector>
 #include <string>
 #include <stack>
@@ -36,19 +34,18 @@
 #include "./include/classes.hpp"
 #include "./include/draw.hpp"
 #include "./include/parser.hpp"
+#include "./include/image.hpp"
 #include "./include/save_image.hpp"
 
 // Макросы
-#define VERSION               "1.0.2"                                          // Версия
+#define VERSION               "1.0.3 TEST"                                          // Версия
 #define INDENT_X              10                                               // Разделитель
 // Размеры
 //  Просмотр цвета
 #define HEIGHT_COLOR_PREVIEW  50
 #define COLOR_FACTOR          1                                                // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
 //  Индикатор и слайдер в ./include/draw.hpp
-#define Y_SLIDER              HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*2+10 // Y координата для слайдеров
-
-#define COLOR_ERASING sf::Color::White
+#define Y_SLIDER              HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*3+10 // Y координата для слайдеров
 
 // Объявления типов
 typedef unsigned short u_short;
@@ -62,7 +59,7 @@ using std::endl;
 template <typename T>
 
 // Функция для вывода чисел
-void getNumberAndChar(T &num)
+void getNumberOrChar(T &num)
 {
     // Запрос
     cin >> num;
@@ -77,10 +74,7 @@ int main(int argc, char **argv)
     Image img;                                       // Изображения
     std::string filepath_temp{".tempZRGE_file.tmp"}; // Путь к временному файлу
     std::string filepath;                            // Путь к файлу
-    std::string stringFile;                          // Хранения строки файлов
-    std::ifstream file;                              // Файл для парсинга
     u_short factor{1};                               // Увеличения
-    char Error{0};                                   // Ошибки
     sf::Image canvas;                                // Холст
     sf::Texture texture;                             // Текстура холста
 
@@ -132,7 +126,7 @@ int main(int argc, char **argv)
     {
         // Запрос увлечения
         cout << "Enter canvas factor: ";
-        getNumberAndChar(factor);
+        getNumberOrChar(factor);
 
         // Заполнение структуры изображения
         //  Формат изображения PNG
@@ -142,35 +136,19 @@ int main(int argc, char **argv)
             img.compression = "rle";
         }
         //  Формат изображения JPG
-        if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
+        else if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
         {
             img.format = "jpg";
             img.compression = "rle";
-        }
+        } 
         //  Формат изображения ZPIF
         else if (filepath.substr(filepath.length() - 5) == ".zpif")
         {
             img.format = "zpif";
 
-            file.open(filepath, std::ios::binary);
-
-            // Парсинг параметров из файла
-            while (getline(file, stringFile))
-            {
-                // Пропуск комментариев и пустых строк.
-                if (stringFile[0] == '\n' || stringFile.empty())
-                    continue;
-
-                // Вызов парсира на текущей строке
-                Error = parserParam(stringFile, img);
-                if (Error == 1)
-                    break;
-                if (Error != 0)
-                    return 1;
-            }
-            stringFile.clear();
+            // Парсинг параметров
+            if (parserParams(img, filepath) < 0) return 1;
         }
-
         //  Ошибка не поддерживаемого формата
         else
         {
@@ -183,21 +161,21 @@ int main(int argc, char **argv)
         char createFile{'\0'};
         cout << "File does not exist create? [Y/n] ";
 
-        getNumberAndChar(createFile);
+        getNumberOrChar(createFile);
 
         if (createFile != 'Y' && createFile != 'y')
             return 0;
 
         // Запрос данных
         cout << "Enter canvas width: ";
-        getNumberAndChar(img.width);
+        getNumberOrChar(img.width);
         cout << "Enter canvas height: ";
-        getNumberAndChar(img.height);
+        getNumberOrChar(img.height);
         cout << "Enter canvas factor: ";
-        getNumberAndChar(factor);
+        getNumberOrChar(factor);
         // Запрос на использование сжатия
         cout << "\033[1mUse RLE compression? [Y/n] \033[0m";
-        getNumberAndChar(img.compression);
+        getNumberOrChar(img.compression);
         if (img.compression == "y" || img.compression == "Y")
             img.compression = "rle";
         else
@@ -225,27 +203,7 @@ int main(int argc, char **argv)
     }
 
     // Загрузка файла в холст
-    if ((img.format == "png" || img.format == "jpg") && std::ifstream(filepath).is_open())
-    {
-        // Загрузка изображения
-        canvas.loadFromFile(filepath);
-
-        // Получение размеров изображения
-        img.width = canvas.getSize().x;
-        img.height = canvas.getSize().y;
-    }
-    else if (img.format == "png" || img.format == "jpg")
-    {
-        // Создания холста
-        canvas.create(img.width, img.height, sf::Color::White);
-    }
-    else if (img.format == "zpif")
-    {
-        // Создания холста
-        canvas.create(img.width, img.height, sf::Color::White);
-    }
-    else
-        return 1;
+    if(loadingImage(img, canvas, texture, filepath, std::ifstream(filepath).is_open()) < 0) return 1;
 
     // Загрузка холста в текстуру
     texture.loadFromImage(canvas);
@@ -256,21 +214,41 @@ int main(int argc, char **argv)
     // Создание индикатора
     sf::Sprite sprite(texture);
 
-    // Загрузка иконки
+    // Загрузка иконки и фона
     sf::Image icon;
-    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png"))
+    sf::Texture backgroundTexture;
+    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png") || !backgroundTexture.loadFromFile("images/background.jpg"))
     {
-        std::cerr << "\033[1;31mError: Failed to load icon!\033[0m" << std::endl;
+        std::cerr << "\033[1;31mError: Failed to load image!\033[0m" << std::endl;
         return 1;
     }
 
     // Установка иконки окна
-    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr()); // Установка иконки
+    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
+
+    // Нормализация фона
+    sf::Sprite backgroundSprite{backgroundTexture};
+
+    // Вычисляем масштаб для сохранения пропорций
+    float *scale = new float{std::max(
+        static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
+        static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
+    )};
+
+    // Устанавливаем масштаб спрайта
+    backgroundSprite.setScale(*scale, *scale);
+
+    // Центрируем текстуру
+    backgroundSprite.setPosition(
+        (static_cast<float>(window.getSize().x) - backgroundTexture.getSize().x * *scale) / 2.f,
+        (static_cast<float>(window.getSize().y) - backgroundTexture.getSize().y * *scale) / 2.f
+    );
+    delete scale; scale = nullptr;
 
     // Растягивание текстуры
     sprite.setScale(img.width * factor / texture.getSize().x, img.height * factor / texture.getSize().y);
 
-    // Функция заливки цветом
+    // Оптимизированная функция заливки цветом
     auto fillColor = [&](int x, int y, sf::Color newColor) {
         sf::Color targetColor = canvas.getPixel(x, y);
         if (targetColor == newColor) return; // Если цвет совпадает, ничего не делаем
@@ -282,15 +260,20 @@ int main(int argc, char **argv)
             sf::Vector2i pos = stack.top();
             stack.pop();
 
-            if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height) continue;
-            if (canvas.getPixel(pos.x, pos.y) != targetColor) continue;
+            // Проверяем границы и совпадение цвета
+            if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height ||
+                canvas.getPixel(pos.x, pos.y) != targetColor) {
+                continue;
+            }
 
+            // Задаём новый цвет
             canvas.setPixel(pos.x, pos.y, newColor);
 
-            stack.push({pos.x + 1, pos.y});
-            stack.push({pos.x - 1, pos.y});
-            stack.push({pos.x, pos.y + 1});
-            stack.push({pos.x, pos.y - 1});
+            // Добавляем соседние пиксели в стек
+            if (pos.x + 1 < img.width) stack.push({pos.x + 1, pos.y});
+            if (pos.x - 1 >= 0) stack.push({pos.x - 1, pos.y});
+            if (pos.y + 1 < img.height) stack.push({pos.x, pos.y + 1});
+            if (pos.y - 1 >= 0) stack.push({pos.x, pos.y - 1});
         }
 
         texture.update(canvas);
@@ -299,28 +282,28 @@ int main(int argc, char **argv)
     // Переменные для холста
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
     //   Для проверок
-    bool isErasing = false,         // Стёрка (false)
-        isPaint = true,             // Рисование (true)
-        isSave = true,              // Сохранено (true)
-        isPipette = false,          // Пипетка (false)
-        isDrawingRect = false,      // Рисования квадрата (false)
-        isDrawingOval = false,      // Рисования овала (false)
-        isFigureBeingDrawn = false, // Предпросмотр фигур (false)
-        isPouring = false;          // Заливка цветом (false)
+    bool isErasing = false,                  // Стёрка (false)
+        isPaint = true,                      // Рисование (true)
+        isSave = true,                       // Сохранено (true)
+        isPipette = false,                   // Пипетка (false)
+        isDrawingRect = false,               // Рисования квадрата (false)
+        isDrawingOval = false,               // Рисования овала (false)
+        isFigureBeingDrawn = false,          // Предпросмотр фигур (false)
+        isPouring = false;                   // Заливка цветом (false)
     //   Размер кисти
     u_short brushSize = 5;
     //   Дорисовывания
-    sf::Vector2i prevMousePos(-1, -1); // Последняя позиция мыши
+    sf::Vector2i prevMousePos(-1, -1);       // Последняя позиция мыши
     //   Предпросмотр фигур
     sf::Vector2i figuresStart(-1, -1), figuresEnd(-1, -1); // Первая и последняя позиции курсора для рисования фигур
     //      Объект для предпросмотра рисования фигур
     sf::RectangleShape previewFigures;
     //      Настройки объекта
     previewFigures.setFillColor(sf::Color::Transparent); // Цвет фона
-    previewFigures.setOutlineThickness(2);      // Размер контура
-    previewFigures.setOutlineColor(sf::Color::Red);      // Цвет контура
+    previewFigures.setOutlineThickness(2);               // Размер контура
+    previewFigures.setOutlineColor(sf::Color::Green);      // Цвет контура
     //   Какой цвет настраивается
-    bool draggingR = false, draggingG = false, draggingB = false;
+    bool draggingR{false}, draggingG{false}, draggingB{false}, draggingA{false};
 
     // Элементы интерфейса
     // Текстуры для кнопок
@@ -342,7 +325,7 @@ int main(int argc, char **argv)
     // Кнопки
     sf::Sprite buttonBrush, buttonEraser, buttonPipette, buttonPlus, buttonMinus, buttonDrawRect, buttonDrawOval, buttonPouring;
     // Слайдеры
-    sf::RectangleShape sliderR, sliderG, sliderB, colorPreview, indent;
+    sf::RectangleShape sliderR, sliderG, sliderB, sliderA, colorPreview, indent;
     sliderR.setFillColor(sf::Color::Red);
     sliderG.setFillColor(sf::Color::Green);
     sliderB.setFillColor(sf::Color::Blue);
@@ -354,54 +337,15 @@ int main(int argc, char **argv)
     colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
     colorPreview.setPosition(img.width * factor + INDENT_X / 2, 0);
     colorPreview.setFillColor(brushColor);
+    // Фон для инструментов
+    sf::RectangleShape backgroundRight(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, window.getSize().y - HEIGHT_COLOR_PREVIEW));
+    backgroundRight.setPosition(img.width * factor + INDENT_X / 2, HEIGHT_COLOR_PREVIEW);
+    backgroundRight.setFillColor(sf::Color(120, 120, 120));
 
-    // Загрузка изображения текстуры
-    if (std::ifstream(filepath).is_open() && img.format == "zpif")
-    {
-        // Парсинг и заполнения пикселя
-        while (getline(file, stringFile))
-        {
-            // Пропускаем пустые строки и комментарии
-            if (stringFile.empty() || stringFile[0] == '\n')
-                continue;
-
-            // Парсинг пикселя
-            Error = parserPixel(stringFile, img);
-
-            if (Error < 0)
-                return -1;
-            if (Error == 1)
-                break; // Завершение рендера
-
-            // Проверка на равенства
-            if (img.point > img.width * img.height)
-                break;
-
-            // Устанавливаем цвет пикселя
-            sf::Color color(img.rgb[0], img.rgb[1], img.rgb[2]);
-
-            // Обработка сжатия
-            if (img.quantity > 0 && containsString(img.compression, "rle"))
-            {
-                while (img.quantity > 0 && (img.point < img.width * img.height))
-                {
-                    canvas.setPixel(((img.point - 1) % img.width), ((img.point - 1) / img.width), color);
-                    img.quantity--;
-                    img.point++;
-                }
-            }
-            // Заполнения пикселя
-            canvas.setPixel(((img.point - 1) % img.width), ((img.point - 1) / img.width), color);
-            // Проверка на на равенства
-            if (img.point + img.quantity > img.width * img.height)
-                cout << "\033[1;33mWARNING: Number of pixels exceeds available\033[0m" << endl;
-        }
-
-        // Обновления текстуру из изменённого изображения
-        texture.update(canvas);
-        file.close();
-        img.rgb[0] = img.rgb[1] = img.rgb[2] = 0;
-    }
+    // Переменные для расчёта FPS
+    sf::Clock clock;
+    int frameCount = 0;
+    float elapsedTime = 0.f;
 
     // Цикл программы (окна)
     while (window.isOpen())
@@ -421,11 +365,10 @@ int main(int argc, char **argv)
 
                     // Запрос на сохранения изображения
                     cout << "Save image? [Y/n] ";
-                    getNumberAndChar(answer);
+                    getNumberOrChar(answer);
                     if (answer == 'Y' || answer == 'y')
                     {
-                        Error = saveImageZPIF(canvas, img, filepath, filepath_temp, Error);
-                        if (Error < 0)
+                        if (saveImageZPIF(canvas, img, filepath, filepath_temp) < 0)
                             return 1;
                     }
                 }
@@ -454,35 +397,41 @@ int main(int argc, char **argv)
                 //   Минус (размер кисти)
                 else if (buttonMinus.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
                     brushSize = std::max(brushSize - 3, 1);
-                // Заливка цветом
+                //   Заливка цветом
                 else if (buttonPouring.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
-                    isPouring = true;
+                    isPouring = true, isDrawingRect = isDrawingOval = isErasing = false;
                 //   Рисования прямоугольников
                 else if (buttonDrawRect.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
-                    isDrawingRect = true, isDrawingOval = isErasing = false;
+                    isDrawingRect = true, isDrawingOval = isErasing = isPouring = false;
                 //   Рисования овалов
                 else if (buttonDrawOval.getGlobalBounds().contains(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y)))
-                    isDrawingOval = true, isDrawingRect = isErasing = false;
+                    isDrawingOval = true, isDrawingRect = isErasing = isPouring = false;
                 //   Заливка цветом
-                else if (isPouring && mousePos.x >= 0 && mousePos.x / factor < img.width && mousePos.y >= 0 && mousePos.y / factor < img.height) 
-                    fillColor(mousePos.x / factor, mousePos.y / factor, brushColor), isSave = false;
+                else if (isPouring && !isPipette && !(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) && mousePos.x >= 0 && mousePos.x / factor < img.width && mousePos.y >= 0 && mousePos.y / factor < img.height) 
+                    fillColor(mousePos.x / factor, mousePos.y / factor, isErasing ? sf::Color::Transparent : brushColor), isSave = false;
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
-                    img.rgb[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                     draggingR = true;
                     isPaint = false;
                 }
                 else if (sliderG.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
-                    img.rgb[1] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[1] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                     draggingG = true;
                     isPaint = false;
                 }
                 else if (sliderB.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
-                    img.rgb[2] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[2] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                     draggingB = true;
+                    isPaint = false;
+                }
+                else if (sliderA.getGlobalBounds().contains(mousePos.x, mousePos.y))
+                {
+                    img.rgba[3] = std::clamp(mousePos.x - sliderA.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    draggingA = true;
                     isPaint = false;
                 }
                 // Рисование фигур
@@ -495,9 +444,10 @@ int main(int argc, char **argv)
                 {
                     brushColor = canvas.getPixel(mousePos.x / factor, mousePos.y / factor);
                     colorPreview.setFillColor(brushColor);
-                    img.rgb[0] = brushColor.r / COLOR_FACTOR;
-                    img.rgb[1] = brushColor.g / COLOR_FACTOR;
-                    img.rgb[2] = brushColor.b / COLOR_FACTOR;
+                    img.rgba[0] = brushColor.r / COLOR_FACTOR;
+                    img.rgba[1] = brushColor.g / COLOR_FACTOR;
+                    img.rgba[2] = brushColor.b / COLOR_FACTOR;
+                    img.rgba[3] = brushColor.a / COLOR_FACTOR;
                     isPipette = false;
                 }
             }
@@ -509,9 +459,10 @@ int main(int argc, char **argv)
                 {
                     brushColor = canvas.getPixel(mousePos.x / factor, mousePos.y / factor);
                     colorPreview.setFillColor(brushColor);
-                    img.rgb[0] = brushColor.r / COLOR_FACTOR;
-                    img.rgb[1] = brushColor.g / COLOR_FACTOR;
-                    img.rgb[2] = brushColor.b / COLOR_FACTOR;
+                    img.rgba[0] = brushColor.r / COLOR_FACTOR;
+                    img.rgba[1] = brushColor.g / COLOR_FACTOR;
+                    img.rgba[2] = brushColor.b / COLOR_FACTOR;
+                    img.rgba[3] = brushColor.a / COLOR_FACTOR;
                     isPipette = false;
                 }
                 // Рисование фигур
@@ -535,7 +486,7 @@ int main(int argc, char **argv)
                         for (int y = figuresStart.y; y < figuresStart.y + rectHeight; ++y)
                         {
                             if (x >= 0 && x < img.width && y >= 0 && y < img.height)
-                                canvas.setPixel(x, y, isErasing ? COLOR_ERASING : brushColor);
+                                canvas.setPixel(x, y, isErasing ? sf::Color::Transparent : brushColor);
                         }
                     }
                     texture.update(canvas);
@@ -567,7 +518,7 @@ int main(int argc, char **argv)
                             {
                                 int pixelX = centerX + x, pixelY = centerY + y;
                                 if (pixelX >= 0 && pixelX < img.width && pixelY >= 0 && pixelY < img.height)
-                                    canvas.setPixel(pixelX, pixelY, isErasing ? COLOR_ERASING : brushColor);
+                                    canvas.setPixel(pixelX, pixelY, isErasing ? sf::Color::Transparent : brushColor);
                             }
                         }
                     }
@@ -575,7 +526,7 @@ int main(int argc, char **argv)
                     isFigureBeingDrawn = isSave = false;
                 }
 
-                draggingR = draggingG = draggingB = false;
+                draggingR = draggingG = draggingB = draggingA = false;
                 isPaint = true;
             }
 
@@ -585,15 +536,19 @@ int main(int argc, char **argv)
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 if (draggingR)
                 {
-                    img.rgb[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[0] = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                 }
                 else if (draggingG)
                 {
-                    img.rgb[1] = std::clamp(mousePos.x - sliderG.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[1] = std::clamp(mousePos.x - sliderG.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                 }
                 else if (draggingB)
                 {
-                    img.rgb[2] = std::clamp(mousePos.x - sliderB.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                    img.rgba[2] = std::clamp(mousePos.x - sliderB.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
+                }
+                else if (draggingA)
+                {
+                    img.rgba[3] = std::clamp(mousePos.x - sliderA.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                 }
             }
 
@@ -602,19 +557,19 @@ int main(int argc, char **argv)
             {
                 // Кисточка
                 if (event.key.code == sf::Keyboard::E)
-                    isErasing = isDrawingOval = isDrawingRect = false;
+                    isErasing = isDrawingOval = isDrawingRect = isPouring = false;
                 // Ластик
                 else if (event.key.code == sf::Keyboard::Q)
                     isErasing = true;
                 // Рисования прямоугольников
                 else if (event.key.code == sf::Keyboard::R)
-                    isDrawingRect = true, isDrawingOval = false;
+                    isDrawingRect = true, isDrawingOval = isPouring = false;
                 // Рисования овалов
                 else if (event.key.code == sf::Keyboard::O)
-                    isDrawingOval = true, isDrawingRect = false;
+                    isDrawingOval = true, isDrawingRect = isPouring = false;
                 // Заливка цветом
                 else if (event.key.code == sf::Keyboard::F) 
-                    isPouring = true;
+                    isPouring = true, isErasing = false;
                 // Очистка
                 else if (event.key.code == sf::Keyboard::C)
                 {
@@ -662,8 +617,7 @@ int main(int argc, char **argv)
                     // Сохранение ZPIF
                     else if (img.format == "zpif")
                     {
-                        Error = saveImageZPIF(canvas, img, filepath, filepath_temp, Error);
-                        if (Error < 0)
+                        if (saveImageZPIF(canvas, img, filepath, filepath_temp) < 0)
                             return 1;
                     }
                     isSave = true;
@@ -672,7 +626,7 @@ int main(int argc, char **argv)
         }
 
         // Обновление цвета кисти
-        brushColor = sf::Color(img.rgb[0] * COLOR_FACTOR, img.rgb[1] * COLOR_FACTOR, img.rgb[2] * COLOR_FACTOR);
+        brushColor = sf::Color(img.rgba[0] * COLOR_FACTOR, img.rgba[1] * COLOR_FACTOR, img.rgba[2] * COLOR_FACTOR, img.rgba[3] * COLOR_FACTOR);
         colorPreview.setFillColor(brushColor);
 
         // Рисование мышью
@@ -689,7 +643,7 @@ int main(int argc, char **argv)
 
             if (x >= 0 && x < img.width && y >= 0 && y < img.height)
             {
-                sf::Color colorToUse = isErasing ? COLOR_ERASING : brushColor;
+                sf::Color colorToUse = isErasing ? sf::Color::Transparent : brushColor;
 
                 if (prevMousePos.x != -1 && prevMousePos.y != -1)
                 {
@@ -759,7 +713,7 @@ int main(int argc, char **argv)
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
             // Ширина и высота прямоугольника
-            int rectWidth = (mousePos.x / factor > img.width ? img.width : mousePos.x) - figuresStart.x, rectHeight = mousePos.y - figuresStart.y;
+            int rectWidth = (mousePos.x / factor > img.width ? img.width * factor : mousePos.x) - figuresStart.x, rectHeight = mousePos.y - figuresStart.y;
             // Квадрат если зажата Shift
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
                 rectWidth = rectHeight;
@@ -768,8 +722,13 @@ int main(int argc, char **argv)
             previewFigures.setPosition(figuresStart.x, figuresStart.y), previewFigures.setSize(sf::Vector2f(rectWidth, rectHeight));
         }
 
-        // Очистка окна (цвет фона интерфейса)
-        window.clear(sf::Color(120, 120, 120));
+        // Очистка окна
+        window.clear(sf::Color::White);
+
+        // Отрисовка фонов
+        window.draw(backgroundSprite);
+        window.draw(backgroundRight);
+
         // Отрисовка элементов
         window.draw(sprite);
         //   Предпросмотр фигур
@@ -780,9 +739,10 @@ int main(int argc, char **argv)
         window.draw(colorPreview);
 
         // Создание слайдеров
-        drawSlider(window, sliderR, img.rgb[0], sf::Color::Red, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + 10));
-        drawSlider(window, sliderG, img.rgb[1], sf::Color::Green, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR + 10 * 2));
-        drawSlider(window, sliderB, img.rgb[2], sf::Color::Blue, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 2 + 10 * 3));
+        drawSlider(window, sliderR, img.rgba[0], sf::Color::Red, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + 10));
+        drawSlider(window, sliderG, img.rgba[1], sf::Color::Green, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR + 10 * 2));
+        drawSlider(window, sliderB, img.rgba[2], sf::Color::Blue, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 2 + 10 * 3));
+        drawSlider(window, sliderA, img.rgba[3], sf::Color::White, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 3 + 10 * 4));
 
         // Создание кнопок
         //   1
@@ -796,6 +756,21 @@ int main(int argc, char **argv)
         drawButton(window, buttonDrawOvalTexture, buttonDrawOval, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + 26 + 20, Y_SLIDER * 8 + 40));
         drawButton(window, buttonPouringTexture, buttonPouring, sf::Vector2f((img.width * factor) + INDENT_X + INDENT_X + (26 + 20) * 2, Y_SLIDER * 8 + 40));
 
+        // Логика обновления FPS
+        float deltaTime = clock.restart().asSeconds();
+        frameCount++;
+        elapsedTime += deltaTime;
+
+        // Вывод FPS каждую секунду
+        if (elapsedTime >= 1.0f) {
+            u_short fps = frameCount / elapsedTime;
+
+            window.setTitle("ZeR Graphics Editor " + std::to_string(fps) + " FPS");
+
+            frameCount = 0;
+            elapsedTime = 0.f;
+        }
+
         // Отрисовка окна
         window.display();
     }
@@ -803,6 +778,6 @@ int main(int argc, char **argv)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////
-///                        ID: HM0100                        ///
-////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+///                           END                           ///
+///////////////////////////////////////////////////////////////
