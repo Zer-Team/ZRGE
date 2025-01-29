@@ -26,11 +26,10 @@
 #define _PARSER_HPP_
 
 // Библиотеки
-#include <string>
-#include <algorithm>
 #include <iostream>
 #include <fstream>
-#include <cctype>
+#include <string>
+//   Собственные
 #include "classes.hpp"
 
 // npos
@@ -52,53 +51,12 @@ inline unsigned short convertBEInNumber(const u_int8_t &byteBig, const u_int8_t 
     return (byteBig << 8) | byteLittle;
 }
 
-// Функция для проверки существования заданного символа в строке
-inline bool containsChar(const std::string &str, const char &ch)
-{
-    return str.find(ch) != NPOS;
-}
-
-// Функция для проверки существования заданного текста в строке
-inline bool containsString(const std::string &str, const std::string &text)
-{
-    return str.find(text) != NPOS;
-}
-
-// Функция для перевода текса в строке к нижнему регистру
-std::string toLowerCase(const std::string &input)
-{
-    std::string result;
-    for (char c : input)
-    {
-        result += std::tolower(c);
-    }
-    return result;
-}
-
 // Функция для получения текста из заданных символов
-std::string extractContent(const std::string &str, const char &startChar, const char &endChar)
-{
-    std::string result;
-    size_t start = 0;
-
-    while ((start = str.find(startChar, start)) != NPOS)
-    {
-        size_t end = str.find(endChar, start + 1);
-        if (end != NPOS)
-        {
-            if (!result.empty())
-            {
-                break;
-            }
-            result += str.substr(start + 1, end - start - 1);
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    return result;
+std::string extractContent(const std::string &str, char startChar, char endChar) {
+    size_t start = str.find(startChar);
+    if (start == NPOS) return "";
+    size_t end = str.find(endChar, start + 1);
+    return (end != NPOS) ? str.substr(start + 1, end - start - 1) : "";
 }
 
 // Функция парсинга параметров
@@ -120,14 +78,12 @@ signed char parserParams(Image &img, const std::string &filepath)
     // Парсинг параметров из файла
     while (getline(file, str))
     {
-        // Пропуск комментариев и пустых строк.
+        // Пропуск пустых строк.
         if (str[0] == '\n' || str.empty())
             continue;
 
         // Парсинг из строки
-        str = toLowerCase(str); // Привод к нижнему регистру
-        
-        if (containsChar(str, '{') && containsChar(str, '}') && containsChar(str, '(') && containsChar(str, ')'))
+        if (str.find('{') != NPOS && str.find('}') != NPOS && str.find('(') != NPOS && str.find(')') != NPOS)
         {
             // Создания объекта и присвоения значений
             Parameter param{extractContent(str, '{', '}'), extractContent(str, '(', ')')};
@@ -139,7 +95,7 @@ signed char parserParams(Image &img, const std::string &filepath)
                 img.height = std::strtoul((param.getValue().data()), nullptr, 10);
         }
 
-        else if (containsString(str, "\x00\x00\xFF\xFF\xFF\xFF"))
+        else if (str.c_str() == std::string("\x00\x00\xFF\xFF\xFF\xFF"))
         {
             if (img.width <= 0 || img.height <= 0)
             {
@@ -163,33 +119,18 @@ signed char parserParams(Image &img, const std::string &filepath)
 }
 
 // Функция парсинга пикселя
-signed char parserPixel(const std::vector<u_int8_t> &buffer, Image &img)
-{
-    // Конец файла
-    if (buffer == std::vector<u_int8_t>(6, 0x00))
-        return 1;
-
-    // Обработка строки
-    else if (buffer[0] != 0x00 || buffer[1] != 0x00)
-    {
-        // Повторения пикселей (сжатия RLE)
-        img.quantity = convertBEInNumber(buffer[0], buffer[1]);
-
-        // Цвета
-        img.rgba[0] = static_cast<u_int8_t>(buffer[2]);
-        img.rgba[1] = static_cast<u_int8_t>(buffer[3]);
-        img.rgba[2] = static_cast<u_int8_t>(buffer[4]);
-        img.rgba[3] = static_cast<u_int8_t>(buffer[5]);
-        
-        return 0;
-    }
-
-    // Ошибки
-    else
+signed char parserPixel(const std::vector<u_int8_t> &buffer, Image &img) {
+    if (buffer.size() != 6)
     {
         cerr << "\033[1;31mError 2: The file is damaged or the format is not supported.\033[0m" << endl;
         return -2;
     }
+    if (buffer == std::vector<u_int8_t>(6, 0x00)) return 1;
+
+    // Количество пикселей подряд
+    img.quantity = convertBEInNumber(buffer[0], buffer[1]);
+    // Запись цвета пикселя
+    std::copy(buffer.begin() + 2, buffer.begin() + 6, img.rgba);
 
     return 0;
 }
