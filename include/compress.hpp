@@ -6,7 +6,6 @@
     This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
-
 */
 
 #ifndef _COMPRESS_HPP_
@@ -15,80 +14,77 @@
 #define NPOS std::string::npos
 
 // Объявления типов
-typedef unsigned int u_int;
+typedef unsigned char u_int8_t;
+typedef unsigned short u_short;
 
 // Добавления в область видимости
-using std::cout;
 using std::cerr;
+using std::cout;
 using std::endl;
 
-// Сжатие
-signed char compress_rle(std::string &input, std::string &output, Image &img) {
-    // Объявления
-    std::string line; // Строка из файла
-    std::string buffer; // Строка для записи в файл 
-    u_int count = 1; // Количество одинаковых пикселей под рад
-    bool header_written = false; // Идут ли данные о пикселях
-    
-    // Открытие файлов
-    std::ifstream input_file(input, std::ios::binary); // tmp файл или файл для чтения данных
-    std::ofstream output_file(output, std::ios::binary); // Файл для записи
+// Преобразование числа в big-endian
+inline void convertNumberInBE(u_short value, std::vector<u_int8_t> &buffer)
+{
+    buffer[0] = value >> 8;
+    buffer[1] = value & 0xFF;
+}
 
-    // Запись параметров в файл
-    output_file << '\xDD' << "ZPIF" << "\n";
-    output_file << "{c}" << '(' << img.compression << ")\n";
-    output_file << "{w}" << '(' << img.width << ")\n";
-    output_file << "{h}" << '(' << img.height << ")\n";
+// Сжатие RLE
+signed char compress_rle(const std::string &input, const std::string &output, const Image &img)
+{
+    std::ifstream inputFile(input, std::ios::binary);
+    std::ofstream outputFile(output, std::ios::binary);
 
-    // Запись начала данных о пикселях
-    output_file << "@s@" << '\n';
-
-    // Проверка на открытие файлов
-    if (!input_file.is_open()||!input_file.is_open()) {
-        cerr << "\033[31mError opening or create main file.\033[0m" << endl;
+    if (!inputFile || !outputFile)
+    {
+        cerr << "\033[31mError opening file.\033[0m" << endl;
         return -1;
     }
 
-    while (getline(input_file, line)) {
+    // Запись заголовка
+    outputFile.write("\xDDZPIF\n", 6);
+    outputFile << "{w}(" << img.width << ")\n";
+    outputFile << "{h}(" << img.height << ")\n";
+    outputFile.write("\x00\x00\xFF\xFF\xFF\xFF\n", 7);
 
-        // Проверка на начало данных о пикселях
-        if (!header_written) {
-            if (line.find("@s@") != NPOS)   header_written = true;
-            continue;
-        }
+    std::vector<u_int8_t> bufferInp(6), // Буфер для чтения
+                          bufferOut(6); // Буфер для записи
+    u_short count = 1;
 
-        // Проверка на конец данных о пикселях
-        if (line.find("@e@") != NPOS) {
-            if (count > 1) {
-                output_file << '(' << count << ')' << buffer << '\n';
-            } else {
-                output_file << buffer << '\n';
+    // Чтение первого блока
+    if (inputFile.read(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size()))
+    {
+        // Чтения остальных блоков
+        while (inputFile.read(reinterpret_cast<char *>(bufferInp.data()), bufferInp.size()))
+        {
+            // Завершаем сжатие при встрече 6 нулевых байтов (конца файла)
+            if (bufferInp == std::vector<u_int8_t>(6, 0x00))
+                break;
+
+            // Проверка данных из буфера out и буфера inp (одинаковые ли они) и не превышает ли count двух байтов
+            if (bufferInp == bufferOut && count < 65535)
+                count++;
+            else
+            {
+                // Проверка нужна ли запись count в блок буфера
+                if (count > 1)
+                {
+                    convertNumberInBE(count, bufferOut);
+                }
+                outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
+                bufferOut = bufferInp;
+                count = 1;
             }
-            break;
         }
-
-        // Сжатие пикселей
-        //  Проверка данных из буфера и строки файла (одинаковые ли они)
-        if (line.find(buffer) != NPOS && !buffer.empty()) 
-            count++; // Увеличения количество одинаковых пикселей под рад
-        else {
-            // Запись в файл данные о пикселях с учетом сжатия
-            if (count > 1) {
-                output_file << '(' << count << ')' << buffer << '\n';
-            } else if (!buffer.empty()) {
-                output_file << buffer << '\n';
-            }
-            buffer = line;
-            count = 1;
+        if (count > 1)
+        {
+            convertNumberInBE(count, bufferOut);
         }
+        outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
     }
-    
-    // Запись конца данных о пикселях
-    output_file << "@e@";
 
-    // Закрытие файлов
-    input_file.close();
-    output_file.close();
+    // Запись конца данных
+    outputFile.write("\x00\x00\x00\x00\x00\x00", 6);
     return 0;
 }
 

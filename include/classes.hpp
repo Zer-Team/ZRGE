@@ -37,17 +37,17 @@ typedef unsigned char  u_int8_t;
 class Image
 {
 public:
-    std::string format{""};       // Формат изображения
-    std::string compression{"0"}; // Сжатие
-    u_short width{0};             // Ширина изображения
-    u_short height{0};            // Высота изображения
-    u_int quantity{0};            // Количество под ряд (для сжатых изображений)
+    std::string format{""};            // Формат изображения
 
-    u_int8_t rgba[4]{0};          // Цвет пикселя
+    u_short width{0};                  // Ширина изображения
+    u_short height{0};                 // Высота изображения
+    u_int quantity{0};                 // Количество под ряд (для сжатых изображений)
 
-    u_int point{0};               // Позиция пикселя заполнения с лево на право сверху вниз
+    u_int8_t rgba[4]{0};               // Цвет пикселя
 
-    bool renderStart{false};      // Разрешения на рендер
+    u_int point{0};                    // Позиция пикселя заполнения с лево на право сверху вниз
+
+    std::streampos renderStart{false}; // Позиция начала данных о пикселе рендер
 };
 
 // Класс для параметров
@@ -67,4 +67,4 @@ public:
     std::string getValue() const { return value; }
 };
 
-#endif
+#endif 

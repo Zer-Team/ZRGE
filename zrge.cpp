@@ -31,11 +31,11 @@
 #include <limits>
 
 //   Собственные
-#include "./include/classes.hpp"
-#include "./include/draw.hpp"
-#include "./include/parser.hpp"
-#include "./include/image.hpp"
-#include "./include/save_image.hpp"
+#include "include/classes.hpp"
+#include "include/draw.hpp"
+#include "include/parser.hpp"
+#include "include/load_image.hpp"
+#include "include/save_image.hpp"
 
 // Макросы
 #define VERSION               "1.0.3"                                          // Версия
@@ -89,11 +89,10 @@ int main(int argc, char **argv)
 
             if (arg == "-h" || arg == "--help")
             {
-                cout << "\033[1;33mUsage: zrge [file path]\033[0m" << endl;
-                cout << "Available keys in the program:\n"
+                cout << "\033[1;33mUsage: zrge [file path]\033[0m\n"
+                     << "Available keys in the program:\n"
                      << "\033[1m Q\033[0m: Eraser\n"
                      << "\033[1m E\033[0m: Brush\n"
-                     << "\033[1m L\033[0m: Finishing the lines\n"
                      << "\033[1m +\033[0m: Increase brush size\n"
                      << "\033[1m -\033[0m: Decrease brush size\n"
                      << "\033[1m R\033[0m: Drawing rectangles\n"
@@ -110,7 +109,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                filepath = arg.data();
+                filepath = arg;
                 break;
             }
         }
@@ -133,13 +132,11 @@ int main(int argc, char **argv)
         if (filepath.substr(filepath.length() - 4) == ".png")
         {
             img.format = "png";
-            img.compression = "rle";
         }
         //  Формат изображения JPG
         else if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
         {
             img.format = "jpg";
-            img.compression = "rle";
         } 
         //  Формат изображения ZPIF
         else if (filepath.substr(filepath.length() - 5) == ".zpif")
@@ -173,13 +170,6 @@ int main(int argc, char **argv)
         getNumberOrChar(img.height);
         cout << "Enter canvas factor: ";
         getNumberOrChar(factor);
-        // Запрос на использование сжатия
-        cout << "\033[1mUse RLE compression? [Y/n] \033[0m";
-        getNumberOrChar(img.compression);
-        if (img.compression == "y" || img.compression == "Y")
-            img.compression = "rle";
-        else
-            img.compression = "0";
 
         // Параметры изображения
         //  Формат PNG
@@ -283,24 +273,24 @@ int main(int argc, char **argv)
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
     //   Для проверок
     bool isErasing = false,                  // Стёрка (false)
-        isPaint = true,                      // Рисование (true)
-        isSave = true,                       // Сохранено (true)
-        isPipette = false,                   // Пипетка (false)
-        isDrawingRect = false,               // Рисования квадрата (false)
-        isDrawingOval = false,               // Рисования овала (false)
-        isFigureBeingDrawn = false,          // Предпросмотр фигур (false)
-        isPouring = false;                   // Заливка цветом (false)
+         isPaint = true,                     // Рисование (true)
+         isSave = true,                      // Сохранено (true)
+         isPipette = false,                  // Пипетка (false)
+         isDrawingRect = false,              // Рисования квадрата (false)
+         isDrawingOval = false,              // Рисования овала (false)
+         isFigureBeingDrawn = false,         // Предпросмотр фигур (false)
+         isPouring = false;                  // Заливка цветом (false)
     //   Размер кисти
     u_short brushSize = 5;
     //   Дорисовывания
-    sf::Vector2i prevMousePos(-1, -1);       // Последняя позиция мыши
+    sf::Vector2i prevMousePos(-1, -1);                     // Последняя позиция мыши
     //   Предпросмотр фигур
     sf::Vector2i figuresStart(-1, -1), figuresEnd(-1, -1); // Первая и последняя позиции курсора для рисования фигур
     //      Объект для предпросмотра рисования фигур
     sf::RectangleShape previewFigures;
     //      Настройки объекта
-    previewFigures.setFillColor(sf::Color::Transparent); // Цвет фона
-    previewFigures.setOutlineThickness(2);               // Размер контура
+    previewFigures.setFillColor(sf::Color::Transparent);   // Цвет фона
+    previewFigures.setOutlineThickness(2);                 // Размер контура
     previewFigures.setOutlineColor(sf::Color::Green);      // Цвет контура
     //   Какой цвет настраивается
     bool draggingR{false}, draggingG{false}, draggingB{false}, draggingA{false};
@@ -309,11 +299,11 @@ int main(int argc, char **argv)
     // Текстуры для кнопок
     sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture, buttonDrawRectTexture, buttonDrawOvalTexture, buttonPouringTexture;
     // Загрузка текстур кнопок
-    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") ||
-        !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") ||
-        !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") ||
-        !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") ||
-        !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
+    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png")        ||
+        !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png")      ||
+        !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png")          ||
+        !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png")        ||
+        !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png")    ||
         !buttonDrawRectTexture.loadFromFile("/usr/share/zrge/images/draw_rect.png") ||
         !buttonDrawOvalTexture.loadFromFile("/usr/share/zrge/images/draw_oval.png") ||
         !buttonPouringTexture.loadFromFile("/usr/share/zrge/images/pouring.png"))
