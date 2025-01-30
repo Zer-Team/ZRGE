@@ -24,11 +24,9 @@
 // Библиотеки
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 #include <stack>
-#include <stdexcept>
-#include <limits>
 
 //   Собственные
 #include "include/classes.hpp"
@@ -38,14 +36,15 @@
 #include "include/save_image.hpp"
 
 // Макросы
-#define VERSION               "1.0.3"                                          // Версия
-#define INDENT_X              10                                               // Разделитель
+#define VERSION              "1.0.4"                                          // Версия
+
 // Размеры
+#define INDENT_X             10                                               // Разделитель
 //  Просмотр цвета
-#define HEIGHT_COLOR_PREVIEW  50
-#define COLOR_FACTOR          1                                                // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
+#define HEIGHT_COLOR_PREVIEW 50
+#define COLOR_FACTOR         1                                                // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
 //  Индикатор и слайдер в ./include/draw.hpp
-#define Y_SLIDER              HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*3+10 // Y координата для слайдеров
+#define Y_SLIDER             HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*3+10 // Y координата для слайдеров
 
 // Объявления типов
 typedef unsigned short u_short;
@@ -58,7 +57,7 @@ using std::endl;
 
 template <typename T>
 
-// Функция для вывода чисел
+// Функция для безопасного ввода чисел
 void getNumberOrChar(T &num)
 {
     // Запрос
@@ -219,26 +218,25 @@ int main(int argc, char **argv)
     // Нормализация фона
     sf::Sprite backgroundSprite{backgroundTexture};
 
-    // Вычисляем масштаб для сохранения пропорций
-    float *scale = new float{std::max(
+    // Вычисления масштаба для сохранения пропорций
+    float scale = std::max(
         static_cast<float>(window.getSize().x) / backgroundTexture.getSize().x,
         static_cast<float>(window.getSize().y) / backgroundTexture.getSize().y
-    )};
-
-    // Устанавливаем масштаб спрайта
-    backgroundSprite.setScale(*scale, *scale);
-
-    // Центрируем текстуру
-    backgroundSprite.setPosition(
-        (static_cast<float>(window.getSize().x) - backgroundTexture.getSize().x * *scale) / 2.f,
-        (static_cast<float>(window.getSize().y) - backgroundTexture.getSize().y * *scale) / 2.f
     );
-    delete scale; scale = nullptr;
+
+    // Установка масштаба спрайта
+    backgroundSprite.setScale(scale, scale);
+
+    // Централизация текстуры
+    backgroundSprite.setPosition(
+        (static_cast<float>(window.getSize().x) - backgroundTexture.getSize().x * scale) / 2.f,
+        (static_cast<float>(window.getSize().y) - backgroundTexture.getSize().y * scale) / 2.f
+    );
 
     // Растягивание текстуры
     sprite.setScale(img.width * factor / texture.getSize().x, img.height * factor / texture.getSize().y);
 
-    // Оптимизированная функция заливки цветом
+    // Функция заливки цветом
     auto fillColor = [&](int x, int y, sf::Color newColor) {
         sf::Color targetColor = canvas.getPixel(x, y);
         if (targetColor == newColor) return; // Если цвет совпадает, ничего не делаем

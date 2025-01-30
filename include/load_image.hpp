@@ -31,7 +31,11 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     if ((img.format == "png" || img.format == "jpg") && isOpenFile)
     {
         // Загрузка изображения
-        canvas.loadFromFile(filepath);
+        if (!canvas.loadFromFile(filepath))
+        {
+            cout << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << endl;
+            return -3;
+        }
 
         // Получение размеров изображения
         img.width = canvas.getSize().x;
@@ -85,10 +89,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
                 cout << "\033[1;33mWARNING: Number of pixels exceeds available\033[0m" << endl;
         }
 
-        // Обновления текстуру из изменённого изображения
-        texture.update(canvas);
         inputFile.close();
-        img.rgba[0] = img.rgba[1] = img.rgba[2] = img.rgba[3] = 0;
     }
     else if (img.format == "zpif" || img.format == "png" || img.format == "jpg")
     {
@@ -98,7 +99,8 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     else
         return -1;
 
-    img.rgba[0] = img.rgba[1] = img.rgba[2] = 0;
+    texture.update(canvas);
+    img.rgba[0] = img.rgba[1] = img.rgba[2] = img.rgba[3] = 0;
     img.rgba[3] = 255;
 
     return 0;
