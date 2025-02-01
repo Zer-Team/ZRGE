@@ -8,13 +8,14 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _COMPRESS_HPP_
+#ifndef _COMPRESS_HPP_ 
 #define _COMPRESS_HPP_
 
-#define NPOS std::string::npos
+#include <stdint.h>
+#include <ctime>
 
 // Объявления типов
-typedef unsigned char u_int8_t;
+typedef unsigned char  u_int8_t;
 typedef unsigned short u_short;
 
 // Добавления в область видимости
@@ -22,11 +23,20 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-// Преобразование числа в big-endian
-inline void convertNumberInBE(u_short value, std::vector<u_int8_t> &buffer)
+// Преобразование числа u_short в big-endian
+inline void convertNumberInBE(const u_short value, std::vector<u_int8_t> &bytes, const u_int8_t &shift = 0)
 {
-    buffer[0] = value >> 8;
-    buffer[1] = value & 0xFF;
+    bytes[0 + shift] = value >> 8;
+    bytes[1 + shift] = value & 0xFF;
+}
+
+// Преобразование числа u_int в big-endian
+inline void convertNumberInBE(const uint64_t value, std::vector<u_int8_t> &bytes)
+{
+    bytes[1] = (value >> 24) & 0xFF;
+    bytes[2] = (value >> 16) & 0xFF;
+    bytes[3] = (value >> 8)  & 0xFF;
+    bytes[4] = value & 0xFF;
 }
 
 // Сжатие RLE
@@ -41,15 +51,37 @@ signed char compress_rle(const std::string &input, const std::string &output, co
         return -1;
     }
 
-    // Запись заголовка
-    outputFile.write("\xDDZPIF\n", 6);
-    outputFile << "{w}(" << img.width << ")\n";
-    outputFile << "{h}(" << img.height << ")\n";
-    outputFile.write("\x00\x00\xFF\xFF\xFF\xFF\n", 7);
+    const size_t bufferSize = img.width * img.height * 6; // Размер буфера
 
-    std::vector<u_int8_t> bufferInp(6), // Буфер для чтения
-                          bufferOut(6); // Буфер для записи
-    u_short count = 1;
+    std::vector<u_int8_t> buffer(bufferSize);             // Буфер для хранения данных
+    std::vector<u_int8_t> bufferInp(6),                   // Буфер для чтения
+                          bufferOut(6);                   // Буфер для записи
+    u_short count {1};                                    // Количество символов подряд
+
+    std::time_t nowTime = std::time(nullptr);             // Получения текущее время
+    std::tm *localTime = std::localtime(&nowTime);        // Преобразования в локальное время
+
+    // Запись заголовка
+    outputFile.write("\x89ZPIF\x0A", 6);
+    
+    // Запись размеров изображения
+    bufferOut[0] = '\x77'; // w
+    convertNumberInBE(static_cast<uint64_t>(img.width), bufferOut);
+    outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
+    bufferOut[0] = '\x68'; // h
+    convertNumberInBE(static_cast<uint64_t>(img.height), bufferOut);
+    outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
+    // Время
+    bufferOut[0] = '\x74'; // t
+    convertNumberInBE(static_cast<u_short>(localTime->tm_year + 1900), bufferOut, 1); // Преобразования года
+    bufferOut[3] = static_cast<u_int8_t>(localTime->tm_mon + 1);
+    bufferOut[4] = static_cast<u_int8_t>(localTime->tm_mday);
+    bufferOut[5] = static_cast<u_int8_t>(localTime->tm_hour);
+
+    outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
+    
+    // Запись начала данных о пикселях
+    outputFile.write("\x00\x00\xFF\xFF\xFF\xFF", 6);
 
     // Чтение первого блока
     if (inputFile.read(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size()))
@@ -68,19 +100,15 @@ signed char compress_rle(const std::string &input, const std::string &output, co
             {
                 // Проверка нужна ли запись count в блок буфера
                 if (count > 1)
-                {
                     convertNumberInBE(count, bufferOut);
-                }
                 outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
                 bufferOut = bufferInp;
                 count = 1;
             }
         }
         if (count > 1)
-        {
             convertNumberInBE(count, bufferOut);
-        }
-        outputFile.write(reinterpret_cast<char *>(bufferOut.data()), bufferOut.size());
+        buffer.insert(buffer.end(), bufferOut.begin(), bufferOut.end());
     }
 
     // Запись конца данных

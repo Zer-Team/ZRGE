@@ -97,4 +97,5 @@ signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, 
 
     return 0;
 }
+
 #endif

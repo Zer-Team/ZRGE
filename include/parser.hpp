@@ -28,7 +28,7 @@
 // Библиотеки
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <stdint.h>
 //   Собственные
 #include "classes.hpp"
 
@@ -45,57 +45,48 @@ using std::cout;
 using std::endl;
 
 // Функция для чтения unsigned short из файла в формате big-endian
-inline unsigned short convertBEInNumber(const u_int8_t &byteBig, const u_int8_t &byteLittle)
+inline u_short convertBEInShort(const std::vector<u_int8_t> &bytes)
 {
-    // Объединение байтов в число (big-endian)
-    return (byteBig << 8) | byteLittle;
+    return (bytes[0] << 8) | bytes[1];
 }
 
-// Функция для получения текста из заданных символов
-std::string extractContent(const std::string &str, char startChar, char endChar) {
-    size_t start = str.find(startChar);
-    if (start == NPOS) return "";
-    size_t end = str.find(endChar, start + 1);
-    return (end != NPOS) ? str.substr(start + 1, end - start - 1) : "";
+// Функция для чтения unsigned int из файла в формате big-endian
+inline uint64_t convertBEInInt(const std::vector<u_int8_t> &bytes)
+{
+    return (static_cast<u_int>(bytes[1]) << 24) | // Не с 0 потому что 0 хранит имя параметра 
+           (static_cast<u_int>(bytes[2]) << 16) |
+           (static_cast<u_int>(bytes[3]) << 8)  |
+           (static_cast<u_int>(bytes[4]));
 }
 
 // Функция парсинга параметров
 signed char parserParams(Image &img, const std::string &filepath)
 {
-    std::string str; // Строка для записи данных из файла
+    std::vector<u_int8_t> buffer(6);                // Буфер для хранения данных
     std::ifstream file{filepath, std::ios::binary}; // Файл для чтения
 
     // Чтение первой строки
-    getline(file, str);
+    file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
 
     // Проверка заголовка
-    if (str != "\xDDZPIF")
+    if (buffer != std::vector<u_int8_t>{0x89, 'Z', 'P', 'I', 'F', 0x0A})
     {
         cerr << "\033[1;31mError 1: The file is damaged or the format is not supported.\033[0m" << std::endl;
         return -1;
     }
 
     // Парсинг параметров из файла
-    while (getline(file, str))
+    while (file.read(reinterpret_cast<char *>(buffer.data()), buffer.size()))
     {
-        // Пропуск пустых строк.
-        if (str[0] == '\n' || str.empty())
-            continue;
+        // Парсинг размеров изображения
+        if (buffer[0] == 0x77)      // w
+            img.width = convertBEInInt(buffer);
 
-        // Парсинг из строки
-        if (str.find('{') != NPOS && str.find('}') != NPOS && str.find('(') != NPOS && str.find(')') != NPOS)
-        {
-            // Создания объекта и присвоения значений
-            Parameter param{extractContent(str, '{', '}'), extractContent(str, '(', ')')};
-            // Получения данных
-            //   Получения размеров
-            if (param.getName()[0] == 'w')
-                img.width = std::strtoul((param.getValue().data()), nullptr, 10);
-            else if (param.getName()[0] == 'h')
-                img.height = std::strtoul((param.getValue().data()), nullptr, 10);
-        }
+        else if (buffer[0] == 0x68) // h
+            img.height = convertBEInInt(buffer);
 
-        else if (str.c_str() == std::string("\x00\x00\xFF\xFF\xFF\xFF"))
+        // Прекращение чтения при достижении начала данных о пикселях
+        else if (buffer == std::vector<u_int8_t>{0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF})
         {
             if (img.width <= 0 || img.height <= 0)
             {
@@ -106,13 +97,6 @@ signed char parserParams(Image &img, const std::string &filepath)
             img.renderStart = file.tellg();
             return 1;
         }
-
-        else
-        {
-            cerr << "\033[1;31mError 1: The file is damaged or the format is not supported.\033[0m" << std::endl;
-            return -1;
-        }
-    
     }
             
     return 0;
@@ -128,7 +112,8 @@ signed char parserPixel(const std::vector<u_int8_t> &buffer, Image &img) {
     if (buffer == std::vector<u_int8_t>(6, 0x00)) return 1;
 
     // Количество пикселей подряд
-    img.quantity = convertBEInNumber(buffer[0], buffer[1]);
+    img.quantity = convertBEInShort(buffer);
+    
     // Запись цвета пикселя
     std::copy(buffer.begin() + 2, buffer.begin() + 6, img.rgba);
 

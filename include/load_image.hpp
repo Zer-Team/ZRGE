@@ -11,10 +11,10 @@
 #ifndef _IMAGE_HPP_
 #define _IMAGE_HPP_
 
-#include <SFML/Graphics.hpp>
+// Библиотеки
 #include <iostream>
 #include <fstream>
-#include <string>
+#include <SFML/Graphics.hpp>
 #include "classes.hpp"
 #include "parser.hpp"
 
@@ -67,9 +67,9 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
             if (Error == 1)
                 break; 
 
-            // Проверка на равенства
-            if (img.point > img.width * img.height)
-                break;
+            // Проверка не выходят ли пиксели за размер изображения
+            if (img.point + img.quantity > img.width * img.height)
+                cout << "\033[1;33mWARNING: Number of pixels exceeds available\033[0m" << endl;
 
             // Устанавливаем цвет пикселя
             sf::Color color(img.rgba[0], img.rgba[1], img.rgba[2], img.rgba[3]);
@@ -84,9 +84,6 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
                     img.point++;
                 }
             }
-            // Проверка на на равенства
-            if (img.point + img.quantity > img.width * img.height)
-                cout << "\033[1;33mWARNING: Number of pixels exceeds available\033[0m" << endl;
         }
 
         inputFile.close();

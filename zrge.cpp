@@ -67,6 +67,9 @@ void getNumberOrChar(T &num)
     cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
+// Функция для заливки цветом
+void fillColor (const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, sf::Color newColor);
+
 // Главная функция
 int main(int argc, char **argv)
 {
@@ -236,37 +239,6 @@ int main(int argc, char **argv)
     // Растягивание текстуры
     sprite.setScale(img.width * factor / texture.getSize().x, img.height * factor / texture.getSize().y);
 
-    // Функция заливки цветом
-    auto fillColor = [&](int x, int y, sf::Color newColor) {
-        sf::Color targetColor = canvas.getPixel(x, y);
-        if (targetColor == newColor) return; // Если цвет совпадает, ничего не делаем
-
-        std::stack<sf::Vector2i> stack;
-        stack.push({x, y});
-
-        while (!stack.empty()) {
-            sf::Vector2i pos = stack.top();
-            stack.pop();
-
-            // Проверяем границы и совпадение цвета
-            if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height ||
-                canvas.getPixel(pos.x, pos.y) != targetColor) {
-                continue;
-            }
-
-            // Задаём новый цвет
-            canvas.setPixel(pos.x, pos.y, newColor);
-
-            // Добавляем соседние пиксели в стек
-            if (pos.x + 1 < img.width) stack.push({pos.x + 1, pos.y});
-            if (pos.x - 1 >= 0) stack.push({pos.x - 1, pos.y});
-            if (pos.y + 1 < img.height) stack.push({pos.x, pos.y + 1});
-            if (pos.y - 1 >= 0) stack.push({pos.x, pos.y - 1});
-        }
-
-        texture.update(canvas);
-    };
-
     // Переменные для холста
     sf::Color brushColor = sf::Color::Black; // Цвет кисти
     //   Для проверок
@@ -396,7 +368,7 @@ int main(int argc, char **argv)
                     isDrawingOval = true, isDrawingRect = isErasing = isPouring = false;
                 //   Заливка цветом
                 else if (isPouring && !isPipette && !(sf::Keyboard::isKeyPressed(sf::Keyboard::LControl)) && mousePos.x >= 0 && mousePos.x / factor < img.width && mousePos.y >= 0 && mousePos.y / factor < img.height) 
-                    fillColor(mousePos.x / factor, mousePos.y / factor, isErasing ? sf::Color::Transparent : brushColor), isSave = false;
+                    fillColor(mousePos.x / factor, mousePos.y / factor, img, canvas, texture, isErasing ? sf::Color::Transparent : brushColor), isSave = false;
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos.x, mousePos.y))
                 {
@@ -764,6 +736,37 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+// Функция для заливки цветом
+void fillColor (const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, sf::Color newColor) {
+    sf::Color targetColor = canvas.getPixel(x, y);
+    if (targetColor == newColor) return; // Если цвет совпадает, ничего не делаем
+
+    std::stack<sf::Vector2i> stack;
+    stack.push({x, y});
+
+    while (!stack.empty()) {
+        sf::Vector2i pos = stack.top();
+        stack.pop();
+
+        // Проверяем границы и совпадение цвета
+        if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height ||
+            canvas.getPixel(pos.x, pos.y) != targetColor) {
+            continue;
+        }
+
+        // Задаём новый цвет
+        canvas.setPixel(pos.x, pos.y, newColor);
+
+        // Добавляем соседние пиксели в стек
+        if (pos.x + 1 < img.width) stack.push({pos.x + 1, pos.y});
+        if (pos.x - 1 >= 0) stack.push({pos.x - 1, pos.y});
+        if (pos.y + 1 < img.height) stack.push({pos.x, pos.y + 1});
+        if (pos.y - 1 >= 0) stack.push({pos.x, pos.y - 1});
+    }
+
+    texture.update(canvas);
 }
 
 ///////////////////////////////////////////////////////////////

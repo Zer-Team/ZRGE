@@ -41,30 +41,13 @@ public:
 
     u_short width{0};                  // Ширина изображения
     u_short height{0};                 // Высота изображения
-    u_int quantity{0};                 // Количество под ряд (для сжатых изображений)
 
     u_int8_t rgba[4]{0};               // Цвет пикселя
 
-    u_int point{0};                    // Позиция пикселя заполнения с лево на право сверху вниз
+    u_int quantity{0};                 // Количество подряд (для сжатия)
+    size_t point{0};                   // Позиция пикселя заполнения с лево на право сверху вниз
 
-    std::streampos renderStart{false}; // Позиция начала данных о пикселе рендер
-};
-
-// Класс для параметров
-class Parameter
-{
-    std::string name;  // Имя
-    std::string value; // Значение
-public:
-    // Конструкторы для присвоения имени и значения
-    Parameter() : name(""), value("")
-    {}
-    Parameter(std::string n, std::string v) : name(n), value(v)
-    {}
-    // Получения имени
-    std::string getName() const { return name; }
-    // Получения значения
-    std::string getValue() const { return value; }
+    std::streampos renderStart{0};     // Позиция начала данных о пикселе
 };
 
 #endif 
