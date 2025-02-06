@@ -16,14 +16,11 @@
 #include <string>
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <limits>
+#include <cstdint>
+
 // Собственные
 #include "classes.hpp"
 #include "compress.hpp"
-
-// Объявления типов
-typedef unsigned int  u_int;
-typedef unsigned char u_int8_t;
 
 // Добавления в область видимости
 using std::cerr;
@@ -35,7 +32,7 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
 {
     std::ofstream file(filename, std::ios::binary);       // Файл на запись
     const size_t bufferSize = img.width * img.height * 6; // Размер буфера
-    std::vector<u_int8_t> buffer(bufferSize);             // Буфер для хранения данных
+    std::vector<uint8_t> buffer(bufferSize);             // Буфер для хранения данных
     size_t index = 0;                                     // Индекс
 
     // Проверка на открытие файла
@@ -45,9 +42,9 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
         return -1;
     }
 
-    for (u_int y = 0; y < img.height; y++)
+    for (uint32_t y = 0; y < img.height; y++)
     {
-        for (u_int x = 0; x < img.width; x++)
+        for (uint32_t x = 0; x < img.width; x++)
         {
             // Получения цвета
             sf::Color pixelColor = image.getPixel(x, y);

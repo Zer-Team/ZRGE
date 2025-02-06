@@ -16,8 +16,8 @@
 
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0101                        ///
-///                      Version: 1.0.4                      ///
-///                     Date: 2025-01-30                     ///
+///                      Version: 1.0.5                      ///
+///                     Date: 2025-02-06                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
@@ -25,8 +25,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
-#include <vector>
-#include <stack>
+#include <limits>
 
 //   Собственные
 #include "include/classes.hpp"
@@ -36,22 +35,20 @@
 #include "include/save_image.hpp"
 
 // Макросы
-#define VERSION              "1.0.4"                                          // Версия
+#define VERSION              "1.0.5"                                          // Версия
 
 // Размеры
 #define INDENT_X             10                                               // Разделитель
 //  Просмотр цвета
 #define HEIGHT_COLOR_PREVIEW 50
-#define COLOR_FACTOR         1                                                // Дополнения цвета (рассчитывается по размеру слайдера если он меньше 255)
 //  Индикатор и слайдер в ./include/draw.hpp
 #define Y_SLIDER             HEIGHT_COLOR_PREVIEW+HEIGHT_COLOR_INDICATOR*3+10 // Y координата для слайдеров
 
 // Объявления типов
-typedef unsigned short u_short;
+typedef unsigned short uint16_t;
 
 // Добавления в область видимости
 using std::cerr;
-using std::cin;
 using std::cout;
 using std::endl;
 
@@ -61,14 +58,11 @@ template <typename T>
 void getNumberOrChar(T &num)
 {
     // Запрос
-    cin >> num;
+    std::cin >> num;
     // Очистка
-    cin.clear();
-    cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cin.clear();
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
-
-// Функция для заливки цветом
-void fillColor (const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, sf::Color newColor);
 
 // Главная функция
 int main(int argc, char **argv)
@@ -76,7 +70,7 @@ int main(int argc, char **argv)
     Image img;                                       // Изображения
     std::string filepath_temp{".tempZRGE_file.tmp"}; // Путь к временному файлу
     std::string filepath;                            // Путь к файлу
-    u_short factor{1};                               // Увеличения
+    uint16_t factor{1};                               // Увеличения
     sf::Image canvas;                                // Холст
     sf::Texture texture;                             // Текстура холста
 
@@ -85,7 +79,7 @@ int main(int argc, char **argv)
     // Получения пути к файлу
     if (argc > 1)
     {
-        for (u_short i = 1; i < argc; i++)
+        for (uint16_t i = 1; i < argc; i++)
         {
             std::string arg = argv[i];
 
@@ -119,7 +113,7 @@ int main(int argc, char **argv)
     else
     {
         cout << "\033[1mEnter the path to the file: \033[0m";
-        getline(cin, filepath);
+        getline(std::cin, filepath);
     }
 
     // Проверка наличия файла
@@ -157,12 +151,12 @@ int main(int argc, char **argv)
     }
     else
     {
-        char createFile{'\0'};
+        char isCreateFile {0};
         cout << "File does not exist create? [Y/n] ";
 
-        getNumberOrChar(createFile);
+        getNumberOrChar(isCreateFile);
 
-        if (createFile != 'Y' && createFile != 'y')
+        if (isCreateFile != 'Y' && isCreateFile != 'y')
             return 0;
 
         // Запрос данных
@@ -251,7 +245,7 @@ int main(int argc, char **argv)
          isFigureBeingDrawn = false,         // Предпросмотр фигур (false)
          isPouring = false;                  // Заливка цветом (false)
     //   Размер кисти
-    u_short brushSize = 5;
+    uint16_t brushSize = 5;
     //   Дорисовывания
     sf::Vector2i prevMousePos(-1, -1);                     // Последняя позиция мыши
     //   Предпросмотр фигур
@@ -404,10 +398,10 @@ int main(int argc, char **argv)
                 {
                     brushColor = canvas.getPixel(mousePos.x / factor, mousePos.y / factor);
                     colorPreview.setFillColor(brushColor);
-                    img.rgba[0] = brushColor.r / COLOR_FACTOR;
-                    img.rgba[1] = brushColor.g / COLOR_FACTOR;
-                    img.rgba[2] = brushColor.b / COLOR_FACTOR;
-                    img.rgba[3] = brushColor.a / COLOR_FACTOR;
+                    img.rgba[0] = brushColor.r;
+                    img.rgba[1] = brushColor.g;
+                    img.rgba[2] = brushColor.b;
+                    img.rgba[3] = brushColor.a;
                     isPipette = false;
                 }
             }
@@ -419,10 +413,10 @@ int main(int argc, char **argv)
                 {
                     brushColor = canvas.getPixel(mousePos.x / factor, mousePos.y / factor);
                     colorPreview.setFillColor(brushColor);
-                    img.rgba[0] = brushColor.r / COLOR_FACTOR;
-                    img.rgba[1] = brushColor.g / COLOR_FACTOR;
-                    img.rgba[2] = brushColor.b / COLOR_FACTOR;
-                    img.rgba[3] = brushColor.a / COLOR_FACTOR;
+                    img.rgba[0] = brushColor.r;
+                    img.rgba[1] = brushColor.g;
+                    img.rgba[2] = brushColor.b;
+                    img.rgba[3] = brushColor.a;
                     isPipette = false;
                 }
                 // Рисование фигур
@@ -435,12 +429,14 @@ int main(int argc, char **argv)
                     figuresStart.x /= factor, figuresStart.y /= factor, figuresEnd.x /= factor, figuresEnd.y /= factor;
 
                     int rectWidth = figuresEnd.x - figuresStart.x, rectHeight = figuresEnd.y - figuresStart.y;
+                    
                     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
                         rectWidth = rectHeight;
                     if (rectWidth < 0)
                         figuresStart.x += rectWidth, rectWidth = -rectWidth;
                     if (rectHeight < 0)
                         figuresStart.y += rectHeight, rectHeight = -rectHeight;
+                    
                     for (int x = figuresStart.x; x < figuresStart.x + rectWidth; ++x)
                     {
                         for (int y = figuresStart.y; y < figuresStart.y + rectHeight; ++y)
@@ -461,15 +457,18 @@ int main(int argc, char **argv)
                     figuresStart.x /= factor, figuresStart.y /= factor, figuresEnd.x /= factor, figuresEnd.y /= factor;
 
                     int rectWidth = figuresEnd.x - figuresStart.x, rectHeight = figuresEnd.y - figuresStart.y;
+                    
                     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
                         rectWidth = rectHeight;
                     if (rectWidth < 0)
                         figuresStart.x += rectWidth, rectWidth = -rectWidth;
                     if (rectHeight < 0)
                         figuresStart.y += rectHeight, rectHeight = -rectHeight;
+                    
                     int centerX = figuresStart.x + rectWidth / 2, centerY = figuresStart.y + rectHeight / 2, radiusX = rectWidth / 2, radiusY = rectHeight / 2;
                     float radiusXSq = static_cast<float>(radiusX * radiusX);
                     float radiusYSq = static_cast<float>(radiusY * radiusY);
+                    
                     for (int y = -radiusY; y <= radiusY; ++y)
                     {
                         for (int x = -radiusX; x <= radiusX; ++x)
@@ -550,7 +549,7 @@ int main(int argc, char **argv)
                     {
                         // Запрос нового названия файла
                         cout << "\033[1mEnter a new file name: \033[0m";
-                        getline(cin, filepath);
+                        getline(std::cin, filepath);
 
                         // Получения нового формата файла
                         if (filepath.substr(filepath.length() - 4) == ".png")
@@ -565,9 +564,7 @@ int main(int argc, char **argv)
                     if (img.format == "png" || img.format == "jpg")
                     {
                         if (canvas.saveToFile(filepath))
-                        {
                             cout << "\033[32mImage saved successfully.\033[0m" << endl;
-                        }
                         else
                         {
                             cerr << "\033[1;31mFailed to save image.\033[0m" << endl;
@@ -586,7 +583,7 @@ int main(int argc, char **argv)
         }
 
         // Обновление цвета кисти
-        brushColor = sf::Color(img.rgba[0] * COLOR_FACTOR, img.rgba[1] * COLOR_FACTOR, img.rgba[2] * COLOR_FACTOR, img.rgba[3] * COLOR_FACTOR);
+        brushColor = sf::Color(img.rgba[0], img.rgba[1], img.rgba[2], img.rgba[3]);
         colorPreview.setFillColor(brushColor);
 
         // Рисование мышью
@@ -723,7 +720,7 @@ int main(int argc, char **argv)
 
         // Вывод FPS каждую секунду
         if (elapsedTime >= 1.0f) {
-            u_short fps = frameCount / elapsedTime;
+            uint16_t fps = frameCount / elapsedTime;
 
             window.setTitle("ZeR Graphics Editor " + std::to_string(fps) + " FPS");
 
@@ -736,37 +733,6 @@ int main(int argc, char **argv)
     }
 
     return 0;
-}
-
-// Функция для заливки цветом
-void fillColor (const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, sf::Color newColor) {
-    sf::Color targetColor = canvas.getPixel(x, y);
-    if (targetColor == newColor) return; // Если цвет совпадает, ничего не делаем
-
-    std::stack<sf::Vector2i> stack;
-    stack.push({x, y});
-
-    while (!stack.empty()) {
-        sf::Vector2i pos = stack.top();
-        stack.pop();
-
-        // Проверяем границы и совпадение цвета
-        if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height ||
-            canvas.getPixel(pos.x, pos.y) != targetColor) {
-            continue;
-        }
-
-        // Задаём новый цвет
-        canvas.setPixel(pos.x, pos.y, newColor);
-
-        // Добавляем соседние пиксели в стек
-        if (pos.x + 1 < img.width) stack.push({pos.x + 1, pos.y});
-        if (pos.x - 1 >= 0) stack.push({pos.x - 1, pos.y});
-        if (pos.y + 1 < img.height) stack.push({pos.x, pos.y + 1});
-        if (pos.y - 1 >= 0) stack.push({pos.x, pos.y - 1});
-    }
-
-    texture.update(canvas);
 }
 
 ///////////////////////////////////////////////////////////////

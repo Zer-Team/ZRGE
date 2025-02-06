@@ -8,21 +8,17 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _IMAGE_HPP_
-#define _IMAGE_HPP_
+#ifndef _LOAD_IMAGE_HPP_
+#define _LOAD_IMAGE_HPP_
 
 // Библиотеки
-#include <iostream>
-#include <fstream>
 #include <SFML/Graphics.hpp>
+#include <fstream>
+#include <cstdint>
+#include <array>
+// Собственные
 #include "classes.hpp"
 #include "parser.hpp"
-
-// Добавления в область видимости
-using std::cerr;
-using std::cin;
-using std::cout;
-using std::endl;
 
 // Загрузка файла в холст
 signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
@@ -33,7 +29,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
         {
-            cout << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << endl;
+            std::cerr << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << std::endl;
             return -3;
         }
 
@@ -44,55 +40,35 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     else if (img.format == "zpif" && isOpenFile)
     {
         // Объявление переменных
-        std::ifstream inputFile{filepath, std::ios::binary};
-        std::vector<u_int8_t> buffer(6);
-        char Error{0};
+        std::ifstream inputFile{filepath, std::ios::binary}; // Файл изображения
+        std::array<uint8_t, 6> buffer;                       // Буфер для чанков 
 
         // Создания холста
         canvas.create(img.width, img.height, sf::Color::Transparent);
 
         inputFile.seekg(img.renderStart);
 
-        // Парсинг и заполнения пикселя
+        // Парсинг пикселей из файла (работа с чанками пикселей)
         while (inputFile.read(reinterpret_cast<char *>(buffer.data()), buffer.size()))
         {
-            // Парсинг пикселя
-            Error = parserPixel(buffer, img);
+            if (buffer == std::array<uint8_t, 6>{0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
+                break; // Выход при достижении чанка структурирования 00
 
-            // Завершение рендера
-            //   Ошибки
-            if (Error < 0)
-                return -1;
-            //   Конец файла
-            if (Error == 1)
-                break; 
+            uint16_t quantity {convertBEInShort(buffer)};
 
-            // Проверка не выходят ли пиксели за размер изображения
-            if (img.point + img.quantity > img.width * img.height)
-                cout << "\033[1;33mWARNING: Number of pixels exceeds available\033[0m" << endl;
+            sf::Color color(buffer[2], buffer[3], buffer[4], buffer[5]);
 
-            // Устанавливаем цвет пикселя
-            sf::Color color(img.rgba[0], img.rgba[1], img.rgba[2], img.rgba[3]);
-
-            // Обработка сжатия
-            if (img.quantity > 0)
-            {
-                while (img.quantity > 0 && (img.point <= img.width * img.height))
-                {
-                    canvas.setPixel((img.point % img.width), (img.point / img.width), color);
-                    img.quantity--;
-                    img.point++;
-                }
+            for (uint16_t i = 0; i < quantity; ++i) {
+                canvas.setPixel((img.point % img.width), (img.point / img.width), color);
+                img.point++;
             }
         }
 
         inputFile.close();
     }
     else if (img.format == "zpif" || img.format == "png" || img.format == "jpg")
-    {
         // Создания холста
         canvas.create(img.width, img.height, sf::Color::White);
-    }
     else
         return -1;
 
