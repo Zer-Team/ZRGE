@@ -97,7 +97,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
         !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
         !buttonDrawRectTexture.loadFromFile("/usr/share/zrge/images/draw_rect.png") ||
         !buttonDrawOvalTexture.loadFromFile("/usr/share/zrge/images/draw_oval.png") ||
-        !buttonDrawStarTexture.loadFromFile("images/draw_star.png") ||
+        !buttonDrawStarTexture.loadFromFile("/usr/share/zrge/images/draw_star.png") ||
         !buttonPouringTexture.loadFromFile("/usr/share/zrge/images/pouring.png"))
     {
         std::cerr << "\033[1;31mError: Failed to load icon!\033[0m" << std::endl;
