@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd '/home/admin/Рабочий стол/ZRGE2/'
+cd '/home/admin/Рабочий стол/ZRGE/'
 
 readonly path='/home/admin/test.zpif'
 
@@ -14,7 +14,7 @@ g++ -c src/load_image.cpp -o build/bin/load_image.o
 echo "3/7"
 g++ -c src/parser.cpp -o build/bin/parser.o
 echo "4/7"
-g++ -c src/render.cpp -o build/bin/render.o
+g++ -c src/graphics.cpp -o build/bin/graphics.o
 echo "5/7"
 g++ -c src/save_image.cpp -o build/bin/save_image.o
 echo "6/7"
@@ -22,7 +22,7 @@ g++ -c src/draw.cpp -o build/bin/draw.o
 echo "7/7"
 
 # Финальная сборка
-g++ -g build/bin/load_image.o build/bin/draw.o build/bin/render.o build/bin/parser.o build/bin/compress.o build/bin/save_image.o build/bin/main.o -o build/bin/zrge -lsfml-graphics -lsfml-window -lsfml-system
+g++ -g build/bin/load_image.o build/bin/draw.o build/bin/graphics.o build/bin/parser.o build/bin/compress.o build/bin/save_image.o build/bin/main.o -o build/bin/zrge -lsfml-graphics -lsfml-window -lsfml-system
 
 # Проверка наличия файла main
 if [ -f ./build/bin/zrge ]; then

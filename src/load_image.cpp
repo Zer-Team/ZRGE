@@ -20,7 +20,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     {
         // Объявление переменных
         std::ifstream inputFile{filepath, std::ios::binary}; // Файл изображения
-        std::array<uint8_t, 6> buffer;                       // Буфер для чанков 
+        std::array<uint8_t, 6> buffer;                       // Буфер для чанков
 
         // Создания холста
         canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::Transparent);
@@ -33,13 +33,20 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
             if (buffer == std::array<uint8_t, 6>{0x00, 0x00, 0x00, 0x00, 0x00, 0x00})
                 break; // Выход при достижении чанка структурирования 00
 
-            uint16_t quantity {convertBEInShort(buffer)};
+            uint16_t quantity{convertBEInShort(buffer)};
 
             sf::Color color(buffer[2], buffer[3], buffer[4], buffer[5]);
 
-            for (uint16_t i = 0; i < quantity; ++i) {
+            for (uint16_t i = 0; i < quantity; ++i)
+            {
+                if (img.point >= img.height * img.width)
+                {
+                    cout << "\033[1;31mThe number of pixels exceeds the possible.\033[0m" << endl;
+                    break;
+                }
+                
                 canvas.setPixel(sf::Vector2u((img.point % img.width), (img.point / img.width)), color);
-                img.point++;
+                ++img.point;
             }
         }
 

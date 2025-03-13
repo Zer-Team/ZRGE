@@ -16,8 +16,8 @@
 
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0101                        ///
-///                      Version: 1.0.6                      ///
-///                     Date: 2025-02-13                     ///
+///                      Version: 1.0.7                      ///
+///                     Date: 2025-03-13                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
@@ -29,16 +29,16 @@
 #include "../include/image.hpp"
 #include "../include/utils.hpp"
 #include "../include/parser.hpp"
-#include "../include/render.hpp"
+#include "../include/graphics.hpp"
 #include "../include/load_image.hpp"
 
 // Макросы
-#define VERSION              "1.0.6"                  // Версия
+#define VERSION              "1.0.7"                  // Версия
 
 int main(int argc, char **argv)
 {
     Image img;                                        // Изображения
-    std::string file_path_temp{".tempZRGE_file.tmp"}; // Путь к временному файлу
+    std::string file_path_temp{".tempZRGEfile.tmp"};  // Путь к временному файлу
     std::string file_path;                            // Путь к файлу
     sf::Image canvas;                                 // Холст
     sf::Texture texture;                              // Текстура холста
@@ -62,9 +62,11 @@ int main(int argc, char **argv)
                      << "\033[1m -\033[0m: Decrease brush size\n"
                      << "\033[1m R\033[0m: Drawing rectangles\n"
                      << "\033[1m O\033[0m: Drawing ovals\n"
+                     << "\033[1m S\033[0m: Drawing stars\n"
                      << "\033[1m F\033[0m: Fill with color\n"
                      << "\033[1m C\033[0m: Clear canvas\n"
-                     << "\033[1m CTRL\033[0m + \033[1mS\033[0m: Save image" << endl;
+                     << "\033[1m CTRL\033[0m + \033[1mS\033[0m: Save image"
+                     << "\033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Save the image with a new name" << endl;
                 return 0;
             }
             else if (arg == "-v" || arg == "--version")
@@ -84,7 +86,6 @@ int main(int argc, char **argv)
         cout << "\033[1mEnter the path to the file: \033[0m";
         getline(std::cin, file_path);
     }
-
 
     // Проверка наличия файла
     if (std::ifstream(file_path).is_open())

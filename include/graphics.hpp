@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <limits>
+#include <cmath>
 #include <algorithm>
 #include "image.hpp"
 #include "draw.hpp"
