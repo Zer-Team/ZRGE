@@ -1,11 +1,20 @@
 #!/bin/sh
 
-cd '/home/admin/Рабочий стол/ZRGE/'
-
-readonly path='/home/admin/test.zpif'
-
+# Очистка
 clear
 
+# Переход в нужную директорию
+cd /home/admin/Рабочий\ стол/ZerScript
+
+# Проверка есть ли bin
+if [ -f "build/bin" ]; 
+then
+    rm -r build/bin
+    
+    mkdir build/bin
+fi
+
+# Компиляция
 g++ -c src/compress.cpp -o build/bin/compress.o
 echo "1/7"
 g++ -c src/main.cpp -o build/bin/main.o

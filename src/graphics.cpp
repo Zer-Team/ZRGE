@@ -32,14 +32,14 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     sf::Sprite backgroundSprite{backgroundTexture};
 
     // Проверка размеров
-    if (backgroundTexture.getSize().x == 0 || backgroundTexture.getSize().y == 0 || texture.getSize().y == 0 || texture.getSize().x == 0)
+    if (backgroundTexture.getSize().x == 0 || backgroundTexture.getSize().y == 0 || texture.getSize().y == 0 || texture.getSize().x == 0 || img.factor <= 0)
     {
-        cerr << "ERROR SIZE\n"
-             << "Texture:" << texture.getSize().x << "x" << texture.getSize().y << '\n'
-             << "BG texture:" << backgroundTexture.getSize().x << "x" << backgroundTexture.getSize().y << '\n'
-             << "Image:" << img.width << "x" << img.height << endl
-             << '\n'
-             << "Canvas:" << canvas.getSize().x << "x" << canvas.getSize().y << endl;
+        cerr << "\x1b[1;31mERROR SIZE\n"
+             << "Factor: " << img.factor << '\n'
+             << "Texture: " << texture.getSize().x << "x" << texture.getSize().y << '\n'
+             << "BG texture: " << backgroundTexture.getSize().x << "x" << backgroundTexture.getSize().y << '\n'
+             << "Image: " << img.width << "x" << img.height << '\n'
+             << "Canvas: " << canvas.getSize().x << "x" << canvas.getSize().y << "\x1b[0m" << endl;
         return 1;
     }
 
@@ -74,7 +74,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     //   Размер кисти
     uint16_t brushSize = 5;
     //   Дорисовывания
-    sf::Vector2i prevMousePos(-1, -1); // Последняя позиция мыши
+    sf::Vector2i prevMousePos(-1, -1);                     // Последняя позиция мыши
     //   Предпросмотр фигур
     sf::Vector2f figuresStart(-1, -1), figuresEnd(-1, -1); // Первая и последняя позиции курсора для рисования фигур
     //      Объект для предпросмотра рисования фигур
@@ -90,11 +90,11 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     // Текстуры для кнопок
     sf::Texture buttonBrushTexture, buttonEraserTexture, buttonPipetteTexture, buttonPlusTexture, buttonMinusTexture, buttonDrawRectTexture, buttonDrawOvalTexture, buttonDrawStarTexture, buttonPouringTexture;
     // Загрузка текстур кнопок
-    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png") ||
-        !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png") ||
-        !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png") ||
-        !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png") ||
-        !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png") ||
+    if (!buttonBrushTexture.loadFromFile("/usr/share/zrge/images/brush.png")        ||
+        !buttonEraserTexture.loadFromFile("/usr/share/zrge/images/eraser.png")      ||
+        !buttonPlusTexture.loadFromFile("/usr/share/zrge/images/plus.png")          ||
+        !buttonMinusTexture.loadFromFile("/usr/share/zrge/images/minus.png")        ||
+        !buttonPipetteTexture.loadFromFile("/usr/share/zrge/images/pipette.png")    ||
         !buttonDrawRectTexture.loadFromFile("/usr/share/zrge/images/draw_rect.png") ||
         !buttonDrawOvalTexture.loadFromFile("/usr/share/zrge/images/draw_oval.png") ||
         !buttonDrawStarTexture.loadFromFile("/usr/share/zrge/images/draw_star.png") ||
@@ -455,15 +455,15 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
 
                         // Получения нового формата файла
                         if (filepath.substr(filepath.length() - 4) == ".png")
-                            img.format = "png";
+                            img.format = ImageFormat::JPEG;
                         else if (filepath.substr(filepath.length() - 4) == ".jpg" || filepath.substr(filepath.length() - 5) == ".jpeg")
-                            img.format = "jpg";
+                            img.format = ImageFormat::PNG;
                         else if (filepath.substr(filepath.length() - 5) == ".zpif")
-                            img.format = "zpif";
+                            img.format = ImageFormat::ZPIF;
                     }
 
                     // Сохранение PNG и JPG
-                    if (img.format == "png" || img.format == "jpg")
+                    if (img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG)
                     {
                         if (canvas.saveToFile(filepath))
                             cout << "\033[32mImage saved successfully.\033[0m" << endl;
@@ -474,7 +474,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                         }
                     }
                     // Сохранение ZPIF
-                    else if (img.format == "zpif")
+                    else if (img.format == ImageFormat::ZPIF)
                     {
                         if (saveImageZPIF(canvas, img, filepath, filepath_temp) < 0)
                             return 1;

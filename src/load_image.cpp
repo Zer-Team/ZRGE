@@ -3,20 +3,20 @@
 signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
 {
     // Проверки форматов
-    if ((img.format == "png" || img.format == "jpg") && isOpenFile)
+    if ((img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG) && isOpenFile)
     {
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
         {
             std::cerr << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << std::endl;
-            return -3;
+            return -1;
         }
 
         // Получение размеров изображения
         img.width = canvas.getSize().x;
         img.height = canvas.getSize().y;
     }
-    else if (img.format == "zpif" && isOpenFile)
+    else if (img.format == ImageFormat::ZPIF && isOpenFile)
     {
         // Объявление переменных
         std::ifstream inputFile{filepath, std::ios::binary}; // Файл изображения
@@ -52,7 +52,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
 
         inputFile.close();
     }
-    else if (img.format == "zpif" || img.format == "png" || img.format == "jpg")
+    else if (img.format == ImageFormat::ZPIF || img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG)
         // Создания холста
         canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
     else
@@ -62,7 +62,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     if (!texture.resize(canvas.getSize()))
     {
         std::cerr << "\033[1;31mError: Failed to resize texture! Width=" << img.width << ", Height=" << img.height << "\033[0m" << std::endl;
-        return 1;
+        return -1;
     }
     texture.update(canvas);
     img.rgba[0] = img.rgba[1] = img.rgba[2] = img.rgba[3] = 0;
