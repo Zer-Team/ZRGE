@@ -23,12 +23,23 @@
 #define WIDTH_COLOR_INDICATOR 5
 #define HEIGHT_COLOR_INDICATOR 28
 
-// Функция для создания ползунков
+/** 
+ @brief Функция для создания слайдеров на экране
+ @param window Окно программы
+ @param slider Слайдер 
+ @param value Значения 
+ @param color Цвет слайдера
+ @param position Позиция слайдера 
+*/
 void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, const int value, const sf::Color color, const sf::Vector2f &position);
 
-// Функция для создания кнопок
-void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position);
-// Функция для заливки цветом
-void fillColor(const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, const sf::Color newColor);
+/** 
+ @brief Функция для создания кнопок на экране
+ @param window Окно программы
+ @param button Кнопка 
+ @param rect Сдвиг и размер текстуры
+ @param position Позиция кнопки
+*/
+void drawButton(sf::RenderWindow &window, sf::Sprite &button, const sf::IntRect &rect, const sf::Vector2f &position);
 
 #endif

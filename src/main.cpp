@@ -10,14 +10,14 @@
 
 ////////////////////////////////////////////////////////////////
 ///                       GCC   14.2.1                       ///
-///                        SFML 3.0.0                        ///
+///                        SFML 3.0.1                        ///
 ///                         C++   20                         ///
 ////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0101                        ///
-///                      Version: 1.0.7                      ///
-///                     Date: 2025-03-13                     ///
+///                      Version: 1.0.8                      ///
+///                     Date: 2025-05-28                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@
 
 int main(int argc, char **argv)
 {
-    Image img;                                       // Изображения
+    Image img;                                       // Изображения (данные)
     std::string file_path_temp{".tempZRGEfile.tmp"}; // Путь к временному файлу
     std::string file_path;                           // Путь к файлу
     sf::Image canvas;                                // Холст
@@ -65,8 +65,8 @@ int main(int argc, char **argv)
                      << "\033[1m S\033[0m: Drawing stars\n"
                      << "\033[1m F\033[0m: Fill with color\n"
                      << "\033[1m C\033[0m: Clear canvas\n"
-                     << "\033[1m CTRL\033[0m + \033[1mS\033[0m: Save image"
-                     << "\033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Save the image with a new name" << endl;
+                     << "\x1b[1m CTRL\033[0m + \033[1mS\033[0m: Save image"
+                     << "\x1b[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Save the image with a new name" << endl;
                 return 0;
             }
             else if (arg == "-v" || arg == "--version")
@@ -74,9 +74,9 @@ int main(int argc, char **argv)
                 cout << "Version: \033[1m" << VERSION << "\033[0m" << endl;
                 return 0;
             }
-            else
+            else if (arg.find_first_of("--path=") != std::string::npos)
             {
-                file_path = arg;
+                file_path = arg.substr(7);
                 break;
             }
         }
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
         char isCreateFile{0}; // Разрешение на создание файла
 
         // Запрос разрешения на создание файла
-        cout << "File does not exist create? [Y/n] ";
+        cout << "File \x1b[1;34m\"" << file_path << "\"\x1b[0m does not exist create? [Y/n] ";
         getNumberOrChar(isCreateFile);
 
         if (isCreateFile != 'Y' && isCreateFile != 'y')
@@ -151,4 +151,6 @@ int main(int argc, char **argv)
     // Рендер
     if (render(img, canvas, texture, file_path, file_path_temp) < 0)
         return 1;
+
+    return 0;
 }

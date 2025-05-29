@@ -52,11 +52,9 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
 
         inputFile.close();
     }
-    else if (img.format == ImageFormat::ZPIF || img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG)
-        // Создания холста
-        canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
+    // Создания холста
     else
-        return -1;
+        canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
 
     // Изменение размеров текстуры
     if (!texture.resize(canvas.getSize()))
@@ -65,8 +63,6 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         return -1;
     }
     texture.update(canvas);
-    img.rgba[0] = img.rgba[1] = img.rgba[2] = img.rgba[3] = 0;
-    img.rgba[3] = 255;
 
     return 0;
 }

@@ -27,6 +27,25 @@
 using std::cout;
 using std::endl;
 
+// Режим рисовани
+enum class ModeDraw
+{
+        BRUSH,              // Рисование кистью
+        ERASING,            // Стёрка
+        DRAWING_RECT,       // Рисования квадрата
+        DRAWING_OVAL,       // Рисования овала
+        DRAWING_STAR,       // Рисования звезды
+        POURING             // Заливка цветом
+};
+
+/**
+ @brief Главная функция всей графики
+ @param img Данные об изображении 
+ @param canvas Холст
+ @param texture Текстура холста
+ @param filepath Путь к изображению
+ @param filepath_temp Путь к временному файлу 
+ */
 int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, std::string &filepath_temp);
 
 #endif // _RENDER_HPP_

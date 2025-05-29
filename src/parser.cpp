@@ -44,13 +44,14 @@ signed char parserParams(Image &img, const std::string &filepath)
         // Прекращение чтения при достижении начала данных о пикселях
         else if (buffer != std::array<uint8_t, 6>{0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF})
         {
+            // Проверка корректно спарсены ли параметры
             if (img.width <= 0 || img.height <= 0)
             {
                 cerr << "\033[1;31mError 2: The file is damaged or the format is not supported.\033[0m" << std::endl;
                 return -2;
             }
 
-            img.renderStart = file.tellg();
+            img.renderStart = file.tellg(); // Запись позиции чанка с пикселями 
             return 1;
         }
     }
