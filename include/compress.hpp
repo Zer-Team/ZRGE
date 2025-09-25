@@ -17,6 +17,7 @@
 #include <iostream>
 #include <vector>
 #include "image.hpp"
+#include "locale.hpp"
 
 // Добавления в область видимости
 using std::cerr;

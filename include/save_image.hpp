@@ -19,6 +19,7 @@
 
 // Собственные
 #include "image.hpp"
+#include "locale.hpp"
 #include "compress.hpp"
 
 // Добавления в область видимости

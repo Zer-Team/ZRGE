@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include "image.hpp"
+#include "locale.hpp"
 #include "draw.hpp"
 #include "save_image.hpp"
 #include "utils.hpp"

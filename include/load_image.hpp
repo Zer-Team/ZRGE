@@ -17,6 +17,7 @@
 #include <array>
 // Собственные
 #include "image.hpp"
+#include "locale.hpp"
 #include "parser.hpp"
 
 // Загрузка файла в холст

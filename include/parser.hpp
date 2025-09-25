@@ -17,6 +17,7 @@
 #include <array>
 //   Собственные
 #include "image.hpp"
+#include "locale.hpp"
 
 // Добавления в область видимости
 using std::cerr;
