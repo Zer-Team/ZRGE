@@ -2,3 +2,4 @@
 *.zpif
 build/bin
 !.gitignore
+public

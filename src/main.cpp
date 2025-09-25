@@ -123,18 +123,19 @@ int main(int argc, char **argv)
         if (isCreateFile != 'Y' && isCreateFile != 'y')
             return 0;
 
-        // Запрос данных
-        cout << locale->enter_img_w;
-        getNumberOrChar(img.width);
-        cout << locale->enter_img_h;
-        getNumberOrChar(img.height);
-
         // Проверка размера имени файла
         if (file_path.size() < 5)
         {
             cerr << "\033[1;31m" << locale->error_path_len << " \'" << file_path << "\'\033[0m" << endl;
             return 1;
         }
+        
+        // Запрос данных
+        cout << locale->enter_img_w;
+        getNumberOrChar(img.width);
+        cout << locale->enter_img_h;
+        getNumberOrChar(img.height);
+
     }
     else if (file_path.substr(file_path.length() - 5) == ".zpif")
     {
