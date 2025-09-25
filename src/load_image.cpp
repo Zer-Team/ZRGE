@@ -1,9 +1,20 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #include "../include/load_image.hpp"
 
 signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
 {
     // Проверки форматов
-    if ((img.format == "png" || img.format == "jpg") && isOpenFile)
+    if ((img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG) && isOpenFile)
     {
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
@@ -16,7 +27,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         img.width = canvas.getSize().x;
         img.height = canvas.getSize().y;
     }
-    else if (img.format == "zpif" && isOpenFile)
+    else if (img.format == ImageFormat::ZPIF && isOpenFile)
     {
         // Объявление переменных
         std::ifstream inputFile{filepath, std::ios::binary}; // Файл изображения
@@ -65,8 +76,6 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         return 1;
     }
     texture.update(canvas);
-    img.rgba[0] = img.rgba[1] = img.rgba[2] = img.rgba[3] = 0;
-    img.rgba[3] = 255;
 
     return 0;
 }

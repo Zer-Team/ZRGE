@@ -1,3 +1,14 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #pragma once
 
 #include <iostream>
@@ -28,11 +39,19 @@ using std::cout;
 using std::endl;
 
 enum class Mode {
-    BRUSH,
-    DRAW_RECT,
-    DRAW_OVAL,
-    DRAW_STAR,
-    POURING
+    BRUSH,     // Кисть
+    DRAW_RECT, // Прямоугольник
+    DRAW_OVAL, // Овол
+    DRAW_STAR, // Звезда
+    POURING    // Заливка
 };
 
+/**
+ @brief Главная функция всей графики
+ @param img Данные об изображении 
+ @param canvas Холст
+ @param texture Текстура холста
+ @param filepath Путь к изображению
+ @param filepath_temp Путь к временному файлу 
+ */
 int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &iconpath, std::string &filepath, std::string &filepath_temp);

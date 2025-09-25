@@ -1,3 +1,14 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #include "../include/locale.hpp"
 
 // Английский
@@ -35,7 +46,7 @@ Available keys in the program:\n\
 \033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Save the image with a new name",
     .enter_file_path = "Enter the path to the file",
     .enter_canvas_factor = "Enter canvas factor: ",
-    .create_file = "File does not exist create?",
+    .create_file = "File does not exist create",
     .enter_img_w = "Enter image width: ",
     .enter_img_h = "Enter image height: ",
     .error_path_len = "File name/path is too short",
@@ -79,7 +90,7 @@ Locale ru_locale = {
 \033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Сохранить изображения с новым именем",
     .enter_file_path = "Ведите путь к файлу",
     .enter_canvas_factor = "Ведите степень увелечения холста: ",
-    .create_file = "Файла не существует, создать его?",
+    .create_file = "Файла не существует, создать",
     .enter_img_w = "Ведите ширену изобраения: ",
     .enter_img_h = "Ведите высоту изображения: ",
     .error_path_len = "Имя или путь файла слишком кароткое",
@@ -123,7 +134,7 @@ Touches disponibles :\n\
 \033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m : Enregistrer l'image avec un nouveau nom",
     .enter_file_path = "Entrez le chemin du fichier",
     .enter_canvas_factor = "Entrez le facteur de la toile : ",
-    .create_file = "Le fichier n'existe pas, le créer ?",
+    .create_file = "Le fichier n'existe pas, le créer",
     .enter_img_w = "Entrez la largeur de l'image : ",
     .enter_img_h = "Entrez la hauteur de l'image : ",
     .error_path_len = "Nom ou chemin du fichier trop court",
@@ -167,7 +178,7 @@ Verfügbare Tasten:\n\
 \033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Bild unter neuem Namen speichern",
     .enter_file_path = "Geben Sie den Dateipfad ein",
     .enter_canvas_factor = "Leinwandfaktor eingeben: ",
-    .create_file = "Datei existiert nicht, erstellen?",
+    .create_file = "Datei existiert nicht, erstellen",
     .enter_img_w = "Bildbreite eingeben: ",
     .enter_img_h = "Bildhöhe eingeben: ",
     .error_path_len = "Dateiname/Dateipfad zu kurz",
@@ -211,7 +222,7 @@ Teclas disponibles:\n\
 \033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Guardar imagen con nuevo nombre",
     .enter_file_path = "Ingrese la ruta del archivo",
     .enter_canvas_factor = "Ingrese el factor del lienzo: ",
-    .create_file = "El archivo no existe, ¿crear?",
+    .create_file = "El archivo no existe, ¿crear",
     .enter_img_w = "Ingrese el ancho de la imagen: ",
     .enter_img_h = "Ingrese la altura de la imagen: ",
     .error_path_len = "Nombre o ruta del archivo demasiado corto",

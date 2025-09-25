@@ -1,5 +1,17 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #include "../include/draw.hpp"
 
+// Функция для создания слайдеров на экране
 void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, const int value, const sf::Color color, const sf::Vector2f &position)
 {
     // Слайдер
@@ -17,51 +29,12 @@ void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, const int 
     window.draw(indicator);
 }
 
-// Функция для создания кнопок
-void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position)
+// Функция для создания кнопок на экране
+void drawButton(sf::RenderWindow &window, sf::Sprite &button, const sf::IntRect &rect, const sf::Vector2f &position)
 {
     // Кнопка
-    button.setTexture(texture);
+    button.setTextureRect(rect);
     button.setPosition(position);
     // Отрисовка
     window.draw(button);
-}
-
-// Функция для заливки цветом
-void fillColor(const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, const sf::Color newColor)
-{
-    sf::Color targetColor = canvas.getPixel(sf::Vector2u(x, y));
-    if (targetColor == newColor)
-        return; // Если цвет совпадает, ничего не делаем
-
-    std::stack<sf::Vector2i> stack;
-    stack.push(sf::Vector2i(x, y));
-
-    while (!stack.empty())
-    {
-        sf::Vector2i pos = stack.top();
-        stack.pop();
-
-        // Проверка границ и совпадение цвета
-        if (pos.x < 0 || pos.x >= img.width || pos.y < 0 || pos.y >= img.height ||
-            canvas.getPixel(static_cast<sf::Vector2u>(pos)) != targetColor)
-        {
-            continue;
-        }
-
-        // Новый цвет
-        canvas.setPixel(static_cast<sf::Vector2u>(pos), newColor);
-
-        // Добавление соседнего пиксели в стек
-        if (pos.x + 1 < img.width)
-            stack.push({pos.x + 1, pos.y});
-        if (pos.x - 1 >= 0)
-            stack.push({pos.x - 1, pos.y});
-        if (pos.y + 1 < img.height)
-            stack.push({pos.x, pos.y + 1});
-        if (pos.y - 1 >= 0)
-            stack.push({pos.x, pos.y - 1});
-    }
-
-    texture.update(canvas);
 }

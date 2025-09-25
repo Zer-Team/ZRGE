@@ -38,6 +38,6 @@ g++ -std=c++20 $OBJ_FILES -o $NAME -lsfml-graphics -lsfml-window -lsfml-system
 # === Старт ===
 echo -e "${GREEN}-------------------STAR-------------------${NC}"
 
-./$NAME -pathicon=../ ./test.zpif -lang=fr
+./$NAME --pathicon=../ --path=./test.zpif --lang=fr
 
 echo -e "${GREEN}-------------------END--------------------${NC}"

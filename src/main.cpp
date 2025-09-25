@@ -80,13 +80,13 @@ int main(int argc, char **argv)
                 cout << locale->version << ": \033[1m" << VERSION << "\033[0m" << endl;
                 return 0;
             }
-            else if (arg.find("-pathicon=") != NPOS)
+            else if (arg.find("--pathicon=") != NPOS)
             {
-                icon_path = arg.substr(10);
+                icon_path = arg.substr(11);
             }
-            else if (arg.find("-lang=") != NPOS)
+            else if (arg.find("--lang=") != NPOS)
             {
-                string l = arg.substr(6);
+                string l = arg.substr(7);
                 if (l.find("ru") != NPOS)
                     locale = &ru_locale;
                 else if (l.find("fr") != NPOS)
@@ -98,9 +98,9 @@ int main(int argc, char **argv)
                 else
                     locale = &en_locale;
             }
-            else
+            else if (arg.find_first_of("--path=") != std::string::npos)
             {
-                file_path = arg;
+                file_path = arg.substr(7);
             }
         }
     cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
@@ -112,40 +112,12 @@ int main(int argc, char **argv)
         getline(std::cin, file_path);
     }
 
-    // Проверка наличия файла
-    if (std::ifstream(file_path).is_open())
+    // Проверка отсутствия файла
+    if (!std::ifstream(file_path).is_open())
     {
-        // Запрос увлечения
-        cout << locale->enter_canvas_factor;
-        getNumberOrChar(img.factor);
+        char isCreateFile{0}; // Разрешение на создание файла
 
-        // Заполнение структуры изображения
-        //  Формат изображения PNG
-        if (file_path.substr(file_path.length() - 4) == ".png")
-            img.format = "png";
-        //  Формат изображения JPG
-        else if (file_path.substr(file_path.length() - 4) == ".jpg" || file_path.substr(file_path.length() - 5) == ".jpeg")
-            img.format = "jpg";
-        //  Формат изображения ZPIF
-        else if (file_path.substr(file_path.length() - 5) == ".zpif")
-        {
-            img.format = "zpif";
-
-            // Парсинг параметров
-            if (parserParams(img, file_path) < 0) return 1;
-        }
-        //  Ошибка не поддерживаемого формата
-        else
-        {
-            cerr << "\033[1;31m" << locale->error_no_supp_file << ".\033[0m" << endl;
-            return 1;
-        }
-    }
-    else
-    {
-        char isCreateFile {0};
-        cout << locale->create_file << " [Y/n] ";
-
+        cout << locale->create_file  << " \"\033[1;34m" << file_path << "\033[0m\"" << " [Y/n] ";
         getNumberOrChar(isCreateFile);
 
         if (isCreateFile != 'Y' && isCreateFile != 'y')
@@ -156,8 +128,6 @@ int main(int argc, char **argv)
         getNumberOrChar(img.width);
         cout << locale->enter_img_h;
         getNumberOrChar(img.height);
-        cout << locale->enter_canvas_factor;
-        getNumberOrChar(img.factor);
 
         // Проверка размера имени файла
         if (file_path.size() < 5)
@@ -165,26 +135,37 @@ int main(int argc, char **argv)
             cerr << "\033[1;31m" << locale->error_path_len << " \'" << file_path << "\'\033[0m" << endl;
             return 1;
         }
+    }
+    else if (file_path.substr(file_path.length() - 5) == ".zpif")
+    {
+        // Парсинг параметров
+        if (parserParams(img, file_path) < 0) return 1;
+    }
 
-        // Параметры изображения
-        //  Формат PNG
-        if (file_path.substr(file_path.length() - 4) == ".png")
-            img.format = "png";
+    // Запрос увлечения
+    cout << locale->enter_canvas_factor;
+    getNumberOrChar(img.factor);
+    if (img.factor <= 0)
+    {
+        cerr << "\033[1;31mError: The factor cannot be less than or equal to zero.\033[0m" << endl;
+        return 1;
+    }
 
-        //  Формат PNG
-        else if (file_path.substr(file_path.length() - 4) == ".jpg" || file_path.substr(file_path.length() - 5) == ".jpeg")
-            img.format = "jpg";
-
-        //  Формат ZPIF
-        else if (file_path.substr(file_path.length() - 5) == ".zpif")
-            img.format = "zpif";
-
-        // Ошибка не поддерживаемого формата
-        else
-        {
-            cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << endl;
-            return 1;
-        }
+    // Заполнение структуры изображения
+    //  Формат изображения PNG
+    if (file_path.substr(file_path.length() - 4) == ".png")
+        img.format = ImageFormat::PNG;
+    //  Формат изображения JPG
+    else if (file_path.substr(file_path.length() - 4) == ".jpg" || file_path.substr(file_path.length() - 5) == ".jpeg")
+        img.format = ImageFormat::JPEG;
+    //  Формат изображения ZPIF
+    else if (file_path.substr(file_path.length() - 5) == ".zpif")
+        img.format = ImageFormat::ZPIF;
+    //  Ошибка не поддерживаемого формата
+    else
+    {
+        cerr << "\033[1;31mError 2: Unsupported file format.\033[0m" << endl;
+        return 1;
     }
 
     // Загрузка изображения в холст
