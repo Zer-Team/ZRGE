@@ -9,8 +9,7 @@
 
 */
 
-#ifndef _DRAW_HPP_
-#define _DRAW_HPP_
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <stack>
@@ -41,5 +40,3 @@ void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, const int 
  @param position Позиция кнопки
 */
 void drawButton(sf::RenderWindow &window, sf::Sprite &button, const sf::IntRect &rect, const sf::Vector2f &position);
-
-#endif

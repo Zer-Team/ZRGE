@@ -8,8 +8,7 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _COMPRESS_HPP_ 
-#define _COMPRESS_HPP_
+#pragma once
 
 #include <cstdint>
 #include <ctime>
@@ -18,6 +17,7 @@
 #include <iostream>
 #include <vector>
 #include "image.hpp"
+#include "locale.hpp"
 
 // Добавления в область видимости
 using std::cerr;
@@ -32,5 +32,3 @@ void convertNumberInBE(const uint32_t value, std::array<uint8_t, 6> &bytes);
 
 // Сжатие RLE
 signed char compress_rle(const std::string &input, const std::string &output, const Image &img);
-
-#endif

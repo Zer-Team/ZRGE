@@ -8,8 +8,7 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _LOAD_IMAGE_HPP_
-#define _LOAD_IMAGE_HPP_
+#pragma once
 
 // Библиотеки
 #include <SFML/Graphics.hpp>
@@ -18,9 +17,8 @@
 #include <array>
 // Собственные
 #include "image.hpp"
+#include "locale.hpp"
 #include "parser.hpp"
 
 // Загрузка файла в холст
 signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile);
-
-#endif

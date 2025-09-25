@@ -8,8 +8,7 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _SAVE_IMAGE_HPP_
-#define _SAVE_IMAGE_HPP_
+#pragma once
 
 // Библиотеки
 #include <fstream>
@@ -20,6 +19,7 @@
 
 // Собственные
 #include "image.hpp"
+#include "locale.hpp"
 #include "compress.hpp"
 
 // Добавления в область видимости
@@ -32,5 +32,3 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
 
 // Сохранение изображения
 signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp);
-
-#endif

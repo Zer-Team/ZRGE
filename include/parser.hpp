@@ -8,8 +8,7 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _PARSER_HPP_
-#define _PARSER_HPP_
+#pragma once
 
 // Библиотеки
 #include <iostream>
@@ -18,6 +17,7 @@
 #include <array>
 //   Собственные
 #include "image.hpp"
+#include "locale.hpp"
 
 // Добавления в область видимости
 using std::cerr;
@@ -32,5 +32,3 @@ uint64_t convertBEInInt(const std::array<uint8_t, 6> &bytes);
 
 // Функция парсинга параметров
 signed char parserParams(Image &img, const std::string &filepath);
-
-#endif

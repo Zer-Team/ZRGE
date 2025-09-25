@@ -1,3 +1,14 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #include "../include/graphics.hpp"
 
 // Рисования звезды
@@ -164,20 +175,18 @@ void fillColor(const int &x, const int &y, const Image &img, sf::Image &canvas, 
     texture.update(canvas);
 }
 
-// Главная функция всей графики
-int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, std::string &filepath_temp)
+int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &iconpath, std::string &filepath, std::string &filepath_temp)
 {
     // Получаем размеры экрана:
     sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+    unsigned int screenWidth = desktop.size.x;
+    unsigned int screenHeight = desktop.size.y;
 
     // Создания окна
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(img.width * img.factor + WIDTH_COLOR_SLIDER + INDENT_X * 2, img.height * img.factor > Y_SLIDER * 12 ? img.height * img.factor : Y_SLIDER * 12)), "ZeR Graphics Editor", sf::Style::Close);
 
     // Установка позиции окна
-    window.setPosition(sf::Vector2i(((desktop.size.x - window.getSize().x) / 2), ((desktop.size.y - window.getSize().y) / 2)));
-
-    // Загрузка курсоров
-    sf::Cursor arrowCursor(sf::Cursor::Type::Arrow), handCursor(sf::Cursor::Type::Hand), crossCursor(sf::Cursor::Type::Cross);
+    window.setPosition(sf::Vector2i(((screenWidth - window.getSize().x) / 2), ((screenHeight - window.getSize().y) / 2)));
 
     // Создание индикатора
     sf::Sprite sprite(texture);
@@ -185,27 +194,32 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     // Загрузка иконки и фона
     sf::Image icon;
     sf::Texture backgroundTexture;
-    if (!icon.loadFromFile("/usr/share/zrge/images/icon.png") || !backgroundTexture.loadFromFile("/usr/share/zrge/images/textures/background.jpg"))
+    if (!icon.loadFromFile(iconpath+"images/icon.png") || !backgroundTexture.loadFromFile(iconpath+"images/textures/background.jpg"))
     {
-        std::cerr << "\033[1;31mError: Failed to load image!\033[0m" << std::endl;
+        std::cerr << "\033[1;31m" << locale->error_load_img << "\033[0m" << std::endl;
         return 1;
     }
+
+    // Курсорs
+    const auto cursorArrow = sf::Cursor::createFromSystem(sf::Cursor::Type::Arrow).value(); // Обычный курсор
+    const auto cursorCross = sf::Cursor::createFromSystem(sf::Cursor::Type::Cross).value(); // Курсор перекрестья
+    const auto cursorHang = sf::Cursor::createFromSystem(sf::Cursor::Type::Hand).value();   // Курсор руки
 
     // Установка иконки окна
     window.setIcon(icon);
 
-    // Фон холста
+    // Нормализация фона
     sf::Sprite backgroundSprite{backgroundTexture};
 
     // Проверка размеров
-    if (backgroundTexture.getSize().x == 0 || backgroundTexture.getSize().y == 0 || texture.getSize().y == 0 || texture.getSize().x == 0 || img.factor <= 0)
+    if (backgroundTexture.getSize().x == 0 || backgroundTexture.getSize().y == 0 || texture.getSize().y == 0 || texture.getSize().x == 0)
     {
-        cerr << "\x1b[1;31mERROR SIZE\n"
-             << "Factor: " << img.factor << '\n'
-             << "Texture: " << texture.getSize().x << "x" << texture.getSize().y << '\n'
-             << "BG texture: " << backgroundTexture.getSize().x << "x" << backgroundTexture.getSize().y << '\n'
-             << "Image: " << img.width << "x" << img.height << '\n'
-             << "Canvas: " << canvas.getSize().x << "x" << canvas.getSize().y << "\x1b[0m" << endl;
+        cerr << locale->error_size << '\n'
+             << locale->texture << texture.getSize().x << "x" << texture.getSize().y << '\n'
+             << locale->texture_bg << backgroundTexture.getSize().x << "x" << backgroundTexture.getSize().y << '\n'
+             << locale->image << img.width << "x" << img.height << endl
+             << '\n'
+             << locale->canvas << canvas.getSize().x << "x" << canvas.getSize().y << endl;
         return 1;
     }
 
@@ -227,13 +241,15 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
 
     // Переменные для холста
     sf::Color color = sf::Color::Black; // Цвет кисти
-    // Режим рисования
-    ModeDraw drawing{ModeDraw::BRUSH};
     //   Для проверок
-    bool isSave = true,             // Сохранено (true)
-        isFigureBeingDrawn = false, // Предпросмотр фигур (false)
+    bool isErasing = false,         // Стёрка (false)
+        isPaint = true,             // Рисование (true)
+        isSave = true,              // Сохранено (true)
         isPipette = false,          // Пипетка (false)
-        isPaint = true;             // Рисование (true)
+        isFigureBeingDrawn = false; // Предпросмотр фигур (false)
+        
+    Mode mode_draw = Mode::BRUSH; // Режим рисования (кисть по умалчанию) 
+
     //   Размер кисти
     uint16_t brushSize = 5;
     //   Дорисовывания
@@ -242,7 +258,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     sf::Vector2f figuresStart(-1, -1), figuresEnd(-1, -1); // Первая и последняя позиции курсора для рисования фигур
     //      Объект для предпросмотра рисования фигур
     sf::RectangleShape previewFigures;
-    //      Параметры объекта
+    //      Настройки объекта
     previewFigures.setFillColor(sf::Color::Transparent); // Цвет фона
     previewFigures.setOutlineThickness(2);               // Размер контура
     previewFigures.setOutlineColor(sf::Color::Green);    // Цвет контура
@@ -252,9 +268,9 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
     // Элементы интерфейса
     //   Текстура для кнопок
     sf::Texture buttonAtlas;
-    if (!buttonAtlas.loadFromFile("/usr/share/zrge/images/textures/buttons.png"))
+    if (!buttonAtlas.loadFromFile(iconpath+"images/textures/buttons.png"))
     {
-        std::cerr << "\033[1;31mError: Failed to load button atlas!\033[0m" << std::endl;
+        std::cerr << "\033[1;31m" << locale->error_load_img << "\033[0m" << std::endl;
         return -1;
     }
 
@@ -263,23 +279,23 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
         buttonPlus(buttonAtlas), buttonMinus(buttonAtlas), buttonDrawRect(buttonAtlas),
         buttonDrawOval(buttonAtlas), buttonDrawStar(buttonAtlas), buttonPouring(buttonAtlas);
 
-    //   Слайдеры
+    // Слайдеры
     sf::RectangleShape sliderR, sliderG, sliderB, sliderA,
         colorPreview, // Предпросмотр цвета
         indent;       // Разделитель
     sliderR.setFillColor(sf::Color::Red);
     sliderG.setFillColor(sf::Color::Green);
     sliderB.setFillColor(sf::Color::Blue);
-    //    Параметры разделителя
+    //   Разделитель
     indent.setFillColor(sf::Color(60, 60, 60));
     indent.setSize(sf::Vector2f(INDENT_X / 2, window.getSize().y));
     indent.setPosition(sf::Vector2f(img.width * img.factor, 0));
     //   Показатель цвета
-    colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X * 1.5, HEIGHT_COLOR_PREVIEW));
+    colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
     colorPreview.setPosition(sf::Vector2f(img.width * img.factor + INDENT_X / 2, 0));
     colorPreview.setFillColor(color);
     //   Фон для инструментов
-    sf::RectangleShape backgroundRight(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X * 1.5, window.getSize().y - HEIGHT_COLOR_PREVIEW));
+    sf::RectangleShape backgroundRight(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, window.getSize().y - HEIGHT_COLOR_PREVIEW));
     backgroundRight.setPosition(sf::Vector2f(img.width * img.factor + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
     backgroundRight.setFillColor(sf::Color(120, 120, 120));
 
@@ -294,7 +310,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
         // Обработка событий
         while (std::optional<sf::Event> event = window.pollEvent())
         {
-            const auto *keyEvent = event->getIf<sf::Event::KeyPressed>(); // Работа с клавиатурой
+            const auto *keyEvent = event->getIf<sf::Event::KeyPressed>(); // Работа с клавиатурой 
             sf::Vector2f mousePos = sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
 
             std::vector<const sf::Sprite *> buttons = {
@@ -335,30 +351,15 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                     char answer;
 
                     // Запрос на сохранения изображения
-                    cout << "Save image? [Y/n] ";
+                    cout << locale->save_img << " [Y/n] ";
                     getNumberOrChar(answer);
                     if (answer == 'Y' || answer == 'y')
                     {
-                        // Сохранение PNG и JPG
-                        if (img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG)
-                        {
-                            if (canvas.saveToFile(filepath))
-                                cout << "\033[32mImage saved successfully.\033[0m" << endl;
-                            else
-                            {
-                                cerr << "\033[1;31mFailed to save image.\033[0m" << endl;
-                                return 1;
-                            }
-                        }
-                        // Сохранение ZPIF
-                        else if (img.format == ImageFormat::ZPIF)
-                        {
-                            if (saveImageZPIF(canvas, img, filepath, filepath_temp) < 0)
-                                return 1;
-                        }
+                        if (saveImageZPIF(canvas, img, filepath, filepath_temp) < 0)
+                            return 1;
                     }
                 }
-                cout << "\033[1;33mExit\033[0m" << endl;
+                cout << "\033[1;33m" << locale->exit << "\033[0m" << endl;
                 window.close();
                 return 0;
             }
@@ -371,13 +372,13 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                 // Кнопки
                 //   Кисть
                 if (buttonBrush.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::BRUSH;
+                    mode_draw = Mode::BRUSH, isPipette = isErasing = 0;
                 //   Ластик
                 else if (buttonEraser.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::ERASING;
+                    isErasing = 1; 
                 //   Пипетка
                 else if (buttonPipette.getGlobalBounds().contains(mousePos))
-                    isPipette = true;
+                    isPipette = 1;
                 //   Плюс (размер кисти)
                 else if (buttonPlus.getGlobalBounds().contains(mousePos))
                     brushSize = std::min(brushSize + 3, 50);
@@ -386,19 +387,19 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                     brushSize = std::max(brushSize - 3, 1);
                 //   Заливка цветом
                 else if (buttonPouring.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::POURING;
+                    mode_draw = Mode::POURING;
                 //   Рисования прямоугольников
                 else if (buttonDrawRect.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::DRAWING_RECT;
+                    mode_draw = Mode::DRAW_RECT;
                 //   Рисования овалов
                 else if (buttonDrawOval.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::DRAWING_OVAL;
+                    mode_draw = Mode::DRAW_OVAL;
                 //   Рисования звезды
                 else if (buttonDrawStar.getGlobalBounds().contains(mousePos))
-                    drawing = ModeDraw::DRAWING_STAR;
+                    mode_draw = Mode::DRAW_STAR;
                 //   Заливка цветом
-                else if (drawing == ModeDraw::POURING && !isPipette && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)) && mousePos.x >= 0 && mousePos.x / img.factor < img.width && mousePos.y >= 0 && mousePos.y / img.factor < img.height)
-                    fillColor(mousePos.x / img.factor, mousePos.y / img.factor, img, canvas, texture, color), isSave = false;
+                else if (mode_draw == Mode::POURING && !isPipette && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl)) && mousePos.x >= 0 && mousePos.x / img.factor < img.width && mousePos.y >= 0 && mousePos.y / img.factor < img.height)
+                    fillColor(mousePos.x / img.factor, mousePos.y / img.factor, img, canvas, texture, isErasing ? sf::Color::Transparent : color), isSave = false;
                 // Слайдеры
                 else if (sliderR.getGlobalBounds().contains(mousePos))
                 {
@@ -425,7 +426,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                     isPaint = false;
                 }
                 // Рисование фигур
-                if ((drawing == ModeDraw::DRAWING_RECT || drawing == ModeDraw::DRAWING_OVAL || drawing == ModeDraw::DRAWING_STAR) &&
+                if ((mode_draw == Mode::DRAW_OVAL || mode_draw == Mode::DRAW_RECT || mode_draw == Mode::DRAW_STAR) && 
                     mouseEvent->button == sf::Mouse::Button::Left && !isPipette)
                 {
                     figuresStart = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
@@ -452,21 +453,21 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                 }
                 // Рисование фигур
                 //   Прямоугольник
-                else if (drawing == ModeDraw::DRAWING_RECT && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
+                else if (mode_draw == Mode::DRAW_RECT && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
                 {
                     figuresEnd = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
                     drawRect(canvas, texture, img, figuresStart, figuresEnd, color);
                     isFigureBeingDrawn = isSave = false;
                 }
                 //   Овал
-                else if (drawing == ModeDraw::DRAWING_OVAL && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
+                else if (mode_draw == Mode::DRAW_OVAL && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
                 {
                     figuresEnd = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
                     drawOval(canvas, texture, img, figuresStart, figuresEnd, color);
                     isFigureBeingDrawn = isSave = false;
                 }
                 //   Звезда
-                else if (drawing == ModeDraw::DRAWING_STAR && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
+                else if (mode_draw == Mode::DRAW_STAR && mouseEvent->button == sf::Mouse::Button::Left && figuresStart.x / img.factor < img.width)
                 {
                     figuresEnd = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
                     drawStar(canvas, texture, img, figuresStart, figuresEnd, color);
@@ -480,6 +481,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
             // Передвижения курсора мыши
             if (event->is<sf::Event::MouseMoved>())
             {
+                // Слайдеры
                 if (draggingR)
                     color.r = std::clamp(mousePos.x - sliderR.getPosition().x, 0.0f, (float)WIDTH_COLOR_SLIDER);
                 else if (draggingG)
@@ -491,11 +493,12 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
 
                 // Изменения курсора
                 if (isHandCursor)
-                    window.setMouseCursor(handCursor);
+                    window.setMouseCursor(cursorHang);
                 else if (sprite.getGlobalBounds().contains(mousePos))
-                    window.setMouseCursor(crossCursor);
+                    window.setMouseCursor(cursorCross);
                 else
-                    window.setMouseCursor(arrowCursor);
+                    window.setMouseCursor(cursorArrow);
+                
             }
 
             // Клавиатура
@@ -503,30 +506,31 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
             {
                 // Проверка не зажата ли CTRL
                 if (!keyEvent->control)
-                {
+                { 
                     // Кисточка
                     if (keyEvent->scancode == sf::Keyboard::Scan::E)
-                        drawing = ModeDraw::BRUSH;
+                        mode_draw = Mode::BRUSH, isErasing = false;
                     // Ластик
                     else if (keyEvent->scancode == sf::Keyboard::Scan::Q)
-                        drawing = ModeDraw::ERASING;
+                        isErasing = true;
                     // Рисования прямоугольников
                     else if (keyEvent->scancode == sf::Keyboard::Scan::R)
-                        drawing = ModeDraw::DRAWING_RECT;
+                        mode_draw = Mode::DRAW_RECT;
                     // Рисования овалов
                     else if (keyEvent->scancode == sf::Keyboard::Scan::O)
-                        drawing = ModeDraw::DRAWING_OVAL;
-                    // Рисования звезды
+                        mode_draw = Mode::DRAW_OVAL;
+                    // Рисования зыезды
                     else if (keyEvent->scancode == sf::Keyboard::Scan::S)
-                        drawing = ModeDraw::DRAWING_STAR;
+                        mode_draw = Mode::DRAW_STAR;
                     // Заливка цветом
                     else if (keyEvent->scancode == sf::Keyboard::Scan::F)
-                        drawing = ModeDraw::POURING;
+                        mode_draw = Mode::POURING, isErasing = false;
                     // Очистка
                     else if (keyEvent->scancode == sf::Keyboard::Scan::C)
                     {
                         canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
                         texture.update(canvas);
+                        isSave = true;
                     }
                     // Увелечения и уменьшения размера кисти
                     else if (keyEvent->scancode == sf::Keyboard::Scan::Equal)
@@ -542,8 +546,15 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                     if (keyEvent->shift)
                     {
                         // Запрос нового названия файла
-                        cout << "\033[1mEnter a new file name: \033[0m";
+                        cout << "\033[1m" << locale->new_name_file << ": \033[0m";
                         getline(std::cin, filepath);
+
+                        // Проверка размера имени файла
+                        if (filepath.size() < 5)
+                        {
+                            cerr << "\033[1;31m" << locale->error_path_len << " \'" << filepath << "\'\033[0m" << endl;
+                            return 1;
+                        }
 
                         // Получения нового формата файла
                         if (filepath.substr(filepath.length() - 4) == ".png")
@@ -558,10 +569,10 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                     if (img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG)
                     {
                         if (canvas.saveToFile(filepath))
-                            cout << "\033[32mImage saved successfully.\033[0m" << endl;
+                            cout << "\033[32m" << locale->img_save_ok << "\033[0m" << endl;
                         else
                         {
-                            cerr << "\033[1;31mFailed to save image.\033[0m" << endl;
+                            cerr << "\033[1;31m" << locale->img_save_no << "\033[0m" << endl;
                             return 1;
                         }
                     }
@@ -576,10 +587,11 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
             }
         }
 
+        // Обновление предпрасмотра цвета
         colorPreview.setFillColor(color);
 
         // Рисование мышью
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && isPaint && !isPipette && (drawing == ModeDraw::BRUSH || drawing == ModeDraw::ERASING) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl))
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && isPaint && mode_draw == Mode::BRUSH && !isPipette && !sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LControl))
         {
             sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -587,9 +599,12 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
             mousePos.x /= img.factor;
             mousePos.y /= img.factor;
 
-            if (mousePos.x >= 0 && mousePos.x < img.width && mousePos.y >= 0 && mousePos.y < img.height)
+            int x = mousePos.x;
+            int y = mousePos.y;
+
+            if (x >= 0 && x < img.width && y >= 0 && y < img.height)
             {
-                sf::Color colorToUse = drawing == ModeDraw::ERASING ? sf::Color::Transparent : color;
+                sf::Color colorToUse = isErasing ? sf::Color::Transparent : color;
 
                 if (prevMousePos.x != -1 && prevMousePos.y != -1)
                 {
@@ -630,8 +645,8 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
                         {
                             if (i * i + j * j <= brushSize * brushSize)
                             {
-                                int pixelX = mousePos.x + i;
-                                int pixelY = mousePos.y + j;
+                                int pixelX = x + i;
+                                int pixelY = y + j;
 
                                 if (pixelX >= 0 && pixelX < img.width && pixelY >= 0 && pixelY < img.height)
                                 {
@@ -687,6 +702,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
         window.draw(indent);
         window.draw(colorPreview);
 
+
         // Создание слайдеров
         drawSlider(window, sliderR, color.r, sf::Color::Red, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + 10));
         drawSlider(window, sliderG, color.g, sf::Color::Green, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR + 10 * 2));
@@ -716,7 +732,7 @@ int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &fil
         {
             uint16_t fps = frameCount / elapsedTime;
 
-            window.setTitle("ZeR Graphics Editor " + std::to_string(fps) + " FPS");
+            window.setTitle(locale->zrge + ' ' + std::to_string(fps) + " FPS");
 
             frameCount = 0;
             elapsedTime = 0.f;

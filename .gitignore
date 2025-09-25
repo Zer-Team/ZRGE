@@ -1,0 +1,4 @@
+.*
+*.zpif
+build/bin
+!.gitignore

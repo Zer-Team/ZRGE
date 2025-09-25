@@ -10,14 +10,14 @@
 
 ////////////////////////////////////////////////////////////////
 ///                       GCC   14.2.1                       ///
-///                        SFML 3.0.1                        ///
+///                        SFML 3.0.0                        ///
 ///                         C++   20                         ///
 ////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0101                        ///
 ///                      Version: 1.0.8                      ///
-///                     Date: 2025-05-28                     ///
+///                     Date: 2025-09-25                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
@@ -25,25 +25,43 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
-#include <limits>
+#include <clocale>
 #include "../include/image.hpp"
+#include "../include/locale.hpp"
 #include "../include/utils.hpp"
 #include "../include/parser.hpp"
 #include "../include/graphics.hpp"
 #include "../include/load_image.hpp"
 
 // Макросы
-#define VERSION "1.0.7" // Версия
+#define VERSION    "1.0.8"                           // Версия
+#define NPOS       std::string::npos                 // NPOS
 
 int main(int argc, char **argv)
 {
-    Image img;                                       // Изображения (данные)
-    std::string file_path_temp{".tempZRGEfile.tmp"}; // Путь к временному файлу
-    std::string file_path;                           // Путь к файлу
-    sf::Image canvas;                                // Холст
-    sf::Texture texture;                             // Текстура холста
 
-    cout << "\033[1;33mWelcome to ZeR Graphics Editor " << VERSION << "!\033[0m" << endl;
+    // Устанавливаем локаль из переменных окружения (LANG, LC_*)
+    std::setlocale(LC_ALL, "");
+
+    Image img;                                        // Изображения
+    std::string file_path_temp{".tempZRGEfile.tmp"}; // Путь к временному файлу
+    std::string file_path;                            // Путь к файлу
+    std::string icon_path{"/usr/share/zrge"};        // Путь к иконкам
+    sf::Image canvas;                                 // Холст
+    sf::Texture texture;                              // Текстура холста
+
+    // Локаль
+    // Получаем текущую локаль для всех категорий
+    const string locale_use = std::setlocale(LC_ALL, nullptr);
+
+    if (locale_use.find("ru_RU") != NPOS)
+        locale = &ru_locale;
+    else if (locale_use.find("fr_FR") != NPOS)
+        locale = &fr_locale;
+    else if (locale_use.find("de_DE") != NPOS)
+        locale = &de_locale;
+    else if (locale_use.find("es_ES") != NPOS)
+        locale = &es_locale;
 
     // Получения пути к файлу
     if (argc > 1)
@@ -54,36 +72,43 @@ int main(int argc, char **argv)
 
             if (arg == "-h" || arg == "--help")
             {
-                cout << "\033[1;33mUsage: zrge [file path]\033[0m\n"
-                     << "Available keys in the program:\n"
-                     << "\033[1m Q\033[0m: Eraser\n"
-                     << "\033[1m E\033[0m: Brush\n"
-                     << "\033[1m +\033[0m: Increase brush size\n"
-                     << "\033[1m -\033[0m: Decrease brush size\n"
-                     << "\033[1m R\033[0m: Drawing rectangles\n"
-                     << "\033[1m O\033[0m: Drawing ovals\n"
-                     << "\033[1m S\033[0m: Drawing stars\n"
-                     << "\033[1m F\033[0m: Fill with color\n"
-                     << "\033[1m C\033[0m: Clear canvas\n"
-                     << "\x1b[1m CTRL\033[0m + \033[1mS\033[0m: Save image"
-                     << "\x1b[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Save the image with a new name" << endl;
+                cout << locale->help << endl;
                 return 0;
             }
             else if (arg == "-v" || arg == "--version")
             {
-                cout << "Version: \033[1m" << VERSION << "\033[0m" << endl;
+                cout << locale->version << ": \033[1m" << VERSION << "\033[0m" << endl;
                 return 0;
+            }
+            else if (arg.find("--pathicon=") != NPOS)
+            {
+                icon_path = arg.substr(11);
+            }
+            else if (arg.find("--lang=") != NPOS)
+            {
+                string l = arg.substr(7);
+                if (l.find("ru") != NPOS)
+                    locale = &ru_locale;
+                else if (l.find("fr") != NPOS)
+                    locale = &fr_locale;
+                else if (l.find("de") != NPOS)
+                    locale = &de_locale;
+                else if (l.find("es") != NPOS)
+                    locale = &es_locale;
+                else
+                    locale = &en_locale;
             }
             else if (arg.find_first_of("--path=") != std::string::npos)
             {
                 file_path = arg.substr(7);
-                break;
             }
         }
+    cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
     }
     else
     {
-        cout << "\033[1mEnter the path to the file: \033[0m";
+        cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
+        cout << "\033[1m" << locale->enter_file_path << ": \033[0m";
         getline(std::cin, file_path);
     }
 
@@ -92,23 +117,22 @@ int main(int argc, char **argv)
     {
         char isCreateFile{0}; // Разрешение на создание файла
 
-        // Запрос разрешения на создание файла
-        cout << "File \x1b[1;34m\"" << file_path << "\"\x1b[0m does not exist create? [Y/n] ";
+        cout << locale->create_file  << " \"\033[1;34m" << file_path << "\033[0m\"" << " [Y/n] ";
         getNumberOrChar(isCreateFile);
 
         if (isCreateFile != 'Y' && isCreateFile != 'y')
             return 0;
 
-        // Запрос данных размеров изображения
-        cout << "Enter canvas width: ";
+        // Запрос данных
+        cout << locale->enter_img_w;
         getNumberOrChar(img.width);
-        cout << "Enter canvas height: ";
+        cout << locale->enter_img_h;
         getNumberOrChar(img.height);
 
         // Проверка размера имени файла
         if (file_path.size() < 5)
         {
-            cerr << "\033[1;31mFile name/path is too short '" << file_path << "\'\033[0m" << endl;
+            cerr << "\033[1;31m" << locale->error_path_len << " \'" << file_path << "\'\033[0m" << endl;
             return 1;
         }
     }
@@ -117,9 +141,9 @@ int main(int argc, char **argv)
         // Парсинг параметров
         if (parserParams(img, file_path) < 0) return 1;
     }
-    
+
     // Запрос увлечения
-    cout << "Enter canvas factor: ";
+    cout << locale->enter_canvas_factor;
     getNumberOrChar(img.factor);
     if (img.factor <= 0)
     {
@@ -145,12 +169,8 @@ int main(int argc, char **argv)
     }
 
     // Загрузка изображения в холст
-    if (loadingImage(img, canvas, texture, file_path, std::ifstream(file_path).is_open()) < 0)
-        return 1;
+    if(loadingImage(img, canvas, texture, file_path, std::ifstream(file_path).is_open()) < 0) return 1;
 
     // Рендер
-    if (render(img, canvas, texture, file_path, file_path_temp) < 0)
-        return 1;
-
-    return 0;
+    if(render(img, canvas, texture, icon_path, file_path, file_path_temp) < 0) return 1;
 }

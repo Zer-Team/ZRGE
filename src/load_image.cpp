@@ -1,3 +1,14 @@
+/*
+    Copyright (C) 2025 Zakhar Shakhanov
+
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
+
+*/
+
 #include "../include/load_image.hpp"
 
 signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
@@ -8,8 +19,8 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
         {
-            std::cerr << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << std::endl;
-            return -1;
+            std::cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << std::endl;
+            return -3;
         }
 
         // Получение размеров изображения
@@ -41,7 +52,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
             {
                 if (img.point >= img.height * img.width)
                 {
-                    cout << "\033[1;31mThe number of pixels exceeds the possible.\033[0m" << endl;
+                    cout << "\033[1;31m" << locale->warning_big_img << "\033[0m" << endl;
                     break;
                 }
                 
@@ -52,15 +63,17 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
 
         inputFile.close();
     }
-    // Создания холста
-    else
+    else if (!isOpenFile)
+        // Создания холста
         canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
+    else
+        return -1;
 
     // Изменение размеров текстуры
     if (!texture.resize(canvas.getSize()))
     {
-        std::cerr << "\033[1;31mError: Failed to resize texture! Width=" << img.width << ", Height=" << img.height << "\033[0m" << std::endl;
-        return -1;
+        std::cerr << "\033[1;31m" << locale->error_resize_texture << ' ' << img.width << "x" << img.height << "\033[0m" << std::endl;
+        return 1;
     }
     texture.update(canvas);
 
