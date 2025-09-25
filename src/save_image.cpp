@@ -11,7 +11,7 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
     // Проверка на открытие файла
     if (!file.is_open())
     {
-        cerr << "\033[31mError opening/create temp file.\033[0m" << endl;
+        cerr << "\033[31m" << locale->error_temp_file_create << "\033[0m" << endl;
         return -1;
     }
 
@@ -48,22 +48,22 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
 signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp)
 {
     // Запись данных в tmp файл
-    cout << "Writing data to a temporary file..." << std::endl;
+    cout << locale->write_in_temp_file << std::endl;
 
     if (recordPixelData(filename_temp, canvas, img) < 0)
         return -1;
 
     // Запись с сжатием из tmp файла в основной
-    cout << "Create, record and compress image..." << endl;
+    cout << locale->write_data << endl;
 
     if (compress_rle(filename_temp, filename, img) < 0)
         return -1;
 
     // Удаление tmp файла
-    cout << "Remove temp file..." << std::endl;
+    cout << locale->remove_temp_file << std::endl;
     remove(filename_temp.c_str());
 
-    cout << "\033[32mImage saved successfully.\033[0m" << endl;
+    cout << "\033[32m" << locale->img_save_ok << "\033[0m" << endl;
 
     return 0;
 }

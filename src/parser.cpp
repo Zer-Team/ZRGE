@@ -27,7 +27,7 @@ signed char parserParams(Image &img, const std::string &filepath)
     // Проверка заголовка
     if (buffer != std::array<uint8_t, 6>{0x89, 'Z', 'P', 'I', 'F', 0x0A})
     {
-        cerr << "\033[1;31mError 1: The file is damaged or the format is not supported.\033[0m" << std::endl;
+        cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << std::endl;
         return -1;
     }
 
@@ -46,7 +46,7 @@ signed char parserParams(Image &img, const std::string &filepath)
         {
             if (img.width <= 0 || img.height <= 0)
             {
-                cerr << "\033[1;31mError 2: The file is damaged or the format is not supported.\033[0m" << std::endl;
+                cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << std::endl;
                 return -2;
             }
 

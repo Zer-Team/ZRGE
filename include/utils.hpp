@@ -1,5 +1,5 @@
-#ifndef _UTILS_HPP_
-#define _UTILS_HPP_
+
+#pragma once
 
 #include <limits>
 #include <iostream>
@@ -15,5 +15,3 @@ void getNumberOrChar(T &obj)
     std::cin.clear();
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
-
-#endif // _UTILS_HPP_

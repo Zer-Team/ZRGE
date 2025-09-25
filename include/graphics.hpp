@@ -1,5 +1,4 @@
-#ifndef _RENDER_HPP_
-#define _RENDER_HPP_
+#pragma once
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -27,6 +26,12 @@
 using std::cout;
 using std::endl;
 
-int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, std::string &filepath_temp);
+enum class Mode {
+    BRUSH,
+    DRAW_RECT,
+    DRAW_OVAL,
+    DRAW_STAR,
+    POURING
+};
 
-#endif // _RENDER_HPP_
+int render(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &iconpath, std::string &filepath, std::string &filepath_temp);

@@ -9,8 +9,7 @@
 
 */
 
-#ifndef _DRAW_HPP_
-#define _DRAW_HPP_
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <stack>
@@ -30,5 +29,3 @@ void drawSlider(sf::RenderWindow &window, sf::RectangleShape &slider, const int 
 void drawButton(sf::RenderWindow &window, const sf::Texture &texture, sf::Sprite &button, const sf::Vector2f &position);
 // Функция для заливки цветом
 void fillColor(const int &x, const int &y, const Image &img, sf::Image &canvas, sf::Texture &texture, const sf::Color newColor);
-
-#endif

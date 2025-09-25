@@ -24,7 +24,7 @@ signed char compress_rle(const std::string &input, const std::string &output, co
 
     if (!inputFile || !outputFile)
     {
-        cerr << "\033[31mError opening file.\033[0m" << endl;
+        cerr << "\033[31m" << locale->error_open_file << "\033[0m" << endl;
         return -1;
     }
 

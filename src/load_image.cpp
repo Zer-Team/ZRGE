@@ -8,7 +8,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
         {
-            std::cerr << "\033[1;31mError 3: The file format is not supported or the file is damaged. CHECK THE FILE.\033[0m" << std::endl;
+            std::cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << std::endl;
             return -3;
         }
 
@@ -41,7 +41,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
             {
                 if (img.point >= img.height * img.width)
                 {
-                    cout << "\033[1;31mThe number of pixels exceeds the possible.\033[0m" << endl;
+                    cout << "\033[1;31m" << locale->warning_big_img << "\033[0m" << endl;
                     break;
                 }
                 
@@ -52,7 +52,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
 
         inputFile.close();
     }
-    else if (img.format == "zpif" || img.format == "png" || img.format == "jpg")
+    else if (!isOpenFile)
         // Создания холста
         canvas.resize(sf::Vector2u(img.width, img.height), sf::Color::White);
     else
@@ -61,7 +61,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
     // Изменение размеров текстуры
     if (!texture.resize(canvas.getSize()))
     {
-        std::cerr << "\033[1;31mError: Failed to resize texture! Width=" << img.width << ", Height=" << img.height << "\033[0m" << std::endl;
+        std::cerr << "\033[1;31m" << locale->error_resize_texture << ' ' << img.width << "x" << img.height << "\033[0m" << std::endl;
         return 1;
     }
     texture.update(canvas);

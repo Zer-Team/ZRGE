@@ -1,30 +1,43 @@
-#!/bin/sh
+#!/bin/bash
+set -e
 
-cd '/home/admin/Рабочий стол/ZRGE/'
-
-readonly path='/home/admin/test.zpif'
-
+# Очистка
 clear
 
-g++ -c src/compress.cpp -o build/bin/compress.o
-echo "1/7"
-g++ -c src/main.cpp -o build/bin/main.o
-echo "2/7"
-g++ -c src/load_image.cpp -o build/bin/load_image.o
-echo "3/7"
-g++ -c src/parser.cpp -o build/bin/parser.o
-echo "4/7"
-g++ -c src/graphics.cpp -o build/bin/graphics.o
-echo "5/7"
-g++ -c src/save_image.cpp -o build/bin/save_image.o
-echo "6/7"
-g++ -c src/draw.cpp -o build/bin/draw.o
-echo "7/7"
+# Директории
+SRC_DIR=../src
+BUILD_DIR=.
+BIN_DIR="$BUILD_DIR/bin"
+mkdir -p "$BIN_DIR"
 
-# Финальная сборка
-g++ -g build/bin/load_image.o build/bin/draw.o build/bin/graphics.o build/bin/parser.o build/bin/compress.o build/bin/save_image.o build/bin/main.o -o build/bin/zrge -lsfml-graphics -lsfml-window -lsfml-system
+# Информация 
+VERSION="1.0.8"
+NAME=$BIN_DIR"/zrge"
 
-# Проверка наличия файла main
-if [ -f ./build/bin/zrge ]; then
-    ./build/bin/zrge
-fi
+# Цвета
+GREEN='\033[0;32m'
+BLUE='\033[0;36m'
+PURPLE='\033[0;95m'
+NC='\033[0m' # No Color
+
+# === Компиляция ===
+C_FILES=$(find "$SRC_DIR" -name "*.cpp")
+OBJ_FILES=""
+
+for file in $C_FILES; do
+    BASENAME=$(basename "$file" .cpp)
+    OBJ_FILE="$BIN_DIR/$BASENAME.o"
+    echo -e "${BLUE}Компиляция: $file -> $OBJ_FILE${NC}"
+    g++ -std=c++17 -c "$file" -o "$OBJ_FILE"
+    OBJ_FILES="$OBJ_FILES $OBJ_FILE"
+done
+
+echo -e "${PURPLE}Линковка -> $NAME${NC}"
+g++ -std=c++20 $OBJ_FILES -o $NAME -lsfml-graphics -lsfml-window -lsfml-system
+
+# === Старт ===
+echo -e "${GREEN}-------------------STAR-------------------${NC}"
+
+./$NAME -pathicon=../ ./test.zpif
+
+echo -e "${GREEN}-------------------END--------------------${NC}"

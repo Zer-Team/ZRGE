@@ -8,8 +8,7 @@
     You should have received a copy of the GNU General Public License along with this program. If not, see https://www.gnu.org/licenses/.
 */
 
-#ifndef _IMAGE_HPP_
-#define _IMAGE_HPP_
+#pragma once
 
 // Библиотеки
 #include <string>
@@ -32,5 +31,3 @@ public:
 
     std::streampos renderStart{0}; // Позиция начала данных о пикселе
 };
-
-#endif // _IMAGE_HPP_
