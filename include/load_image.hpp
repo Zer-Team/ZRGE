@@ -21,4 +21,4 @@
 #include "parser.hpp"
 
 // Загрузка файла в холст
-signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile);
+signed char loadingImage(zp::Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile);

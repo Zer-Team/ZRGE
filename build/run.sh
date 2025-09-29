@@ -5,8 +5,8 @@ set -e
 clear
 
 # Директории
-SRC_DIR=../src
-BUILD_DIR=.
+SRC_DIR=./src
+BUILD_DIR=./build
 BIN_DIR="$BUILD_DIR/bin"
 mkdir -p "$BIN_DIR"
 
@@ -38,6 +38,6 @@ g++ -std=c++20 $OBJ_FILES -o $NAME -lsfml-graphics -lsfml-window -lsfml-system
 # === Старт ===
 echo -e "${GREEN}-------------------STAR-------------------${NC}"
 
-./$NAME --pathicon=../ --path=./test.zpif --lang=fr
+./$NAME pathicon=. path=./test.zpif lang=en
 
 echo -e "${GREEN}-------------------END--------------------${NC}"

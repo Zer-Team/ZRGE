@@ -16,7 +16,7 @@ uint64_t convertBEInInt(const std::array<uint8_t, 6> &bytes)
 }
 
 // Функция парсинга параметров
-signed char parserParams(Image &img, const std::string &filepath)
+signed char parserParams(zp::Image &img, const std::string &filepath)
 {
     std::array<uint8_t, 6> buffer;                  // Буфер для хранения данных
     std::ifstream file{filepath, std::ios::binary}; // Файл для чтения

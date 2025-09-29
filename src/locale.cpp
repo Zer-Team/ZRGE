@@ -17,6 +17,7 @@ Locale en_locale = {
     .error_open_file = "Error opening file.",
     .error_load_img = "Error: Failed to load image!",
     .error_size = "ERROR SIZE: ",
+    .error_size_factor_canvas = "Error: Image zoom factor cannot be less than or equal to zero.",
     .texture = "Texture :",
     .texture_bg = "Background texture: ",
     .image = "Image: ",
@@ -59,45 +60,46 @@ Available keys in the program:\n\
 Locale ru_locale = {
     .zrge = "Графический редактор ZeR",
     .error_open_file = "Ошибка открытия файла.",
-    .error_load_img = "Ошибка: Неудалось загрузить изображения!",
-    .error_size = "ОШИБКА РАЗМРОВ:",
+    .error_load_img = "Ошибка: Не удалось загрузить изображение!",
+    .error_size = "ОШИБКА РАЗМЕРОВ:",
+    .error_size_factor_canvas = "Ошибка: коэффициент увеличения изображения не может быть меньше или равен нулю.",
     .texture = "Текстура: ",
     .texture_bg = "Текстура фона: ",
-    .image = "Изображения: ",
+    .image = "Изображение: ",
     .canvas = "Холст: ",
-    .save_img = "Сохранить изображения?",
+    .save_img = "Сохранить изображение?",
     .exit = "Выход",
-    .new_name_file = "Ведите новое имя файла",
-    .img_save_ok = "Изображения успешно сохранено.",
-    .img_save_no = "Неудалось сохранить изображения.",
-    .error_resize_texture = "Ошибка: Неудалось изменить размер текстуры холста!",
-    .error_no_supp_file = "Ошибка: Формат файла не поддерживается или файл повреждён. ПРОВЕРТЕ ФАЙЛ!",
-    .warning_big_img = "Предупреждения: Количесто пикселей превышает размер изображения.",
+    .new_name_file = "Введите новое имя файла",
+    .img_save_ok = "Изображение успешно сохранено.",
+    .img_save_no = "Не удалось сохранить изображение.",
+    .error_resize_texture = "Ошибка: Не удалось изменить размер текстуры холста!",
+    .error_no_supp_file = "Ошибка: Формат файла не поддерживается или файл повреждён. ПРОВЕРЬТЕ ФАЙЛ!",
+    .warning_big_img = "Предупреждение: Количество пикселей превышает размер изображения.",
     .welcome = "Добро пожаловать в",
     .version = "Версия",
     .help = "\033[1;33mИспользование: zrge [путь к файлу]\033[0m\n\
 Горячие клавиши:\n\
 \033[1m Q\033[0m: Ластик\n\
 \033[1m E\033[0m: Кисть\n\
-\033[1m +\033[0m: Увиличения размера кисти\n\
-\033[1m -\033[0m: Уменьшения размера кисти\n\
-\033[1m R\033[0m: Рисования прямоугольника\n\
-\033[1m O\033[0m: Рисования овала\n\
-\033[1m S\033[0m: Рисования звезды\n\
+\033[1m +\033[0m: Увеличение размера кисти\n\
+\033[1m -\033[0m: Уменьшение размера кисти\n\
+\033[1m R\033[0m: Рисование прямоугольника\n\
+\033[1m O\033[0m: Рисование овала\n\
+\033[1m S\033[0m: Рисование звезды\n\
 \033[1m F\033[0m: Заливка цветом\n\
 \033[1m C\033[0m: Очистка холста\n\
-\033[1m CTRL\033[0m + \033[1mS\033[0m: Сохранить изображения\
-\033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Сохранить изображения с новым именем",
-    .enter_file_path = "Ведите путь к файлу",
-    .enter_canvas_factor = "Ведите степень увелечения холста: ",
-    .create_file = "Файла не существует, создать",
-    .enter_img_w = "Ведите ширену изобраения: ",
-    .enter_img_h = "Ведите высоту изображения: ",
-    .error_path_len = "Имя или путь файла слишком кароткое",
+\033[1m CTRL\033[0m + \033[1mS\033[0m: Сохранить изображение\n\
+\033[1m CTRL\033[0m + \033[1mSHIFT\033[0m + \033[1mS\033[0m: Сохранить изображение с новым именем",
+    .enter_file_path = "Введите путь к файлу",
+    .enter_canvas_factor = "Введите степень увеличения холста: ",
+    .create_file = "Файл не существует, создать?",
+    .enter_img_w = "Введите ширину изображения: ",
+    .enter_img_h = "Введите высоту изображения: ",
+    .error_path_len = "Имя или путь файла слишком короткое",
     .error_temp_file_create = "Ошибка открытия или создания временного файла",
     .write_in_temp_file = "Запись данных во временный файл...",
-    .write_data = "Cоздания, запись и сжатия изображения...",
-    .remove_temp_file = "Удаления временного файла...",
+    .write_data = "Создание, запись и сжатие изображения...",
+    .remove_temp_file = "Удаление временного файла...",
 };
 // Французский
 Locale fr_locale = {
@@ -105,8 +107,9 @@ Locale fr_locale = {
     .error_open_file = "Erreur lors de l'ouverture du fichier.",
     .error_load_img = "Erreur : Impossible de charger l'image !",
     .error_size = "ERREUR DE TAILLE : ",
+    .error_size_factor_canvas = "Erreur : le facteur de zoom de l’image ne peut pas être inférieur ou égal à zéro.",
     .texture = "Texture : ",
-    .texture_bg = "Texture de fond: ",
+    .texture_bg = "Texture de fond : ",
     .image = "Image : ",
     .canvas = "Toile : ",
     .save_img = "Enregistrer l'image ?",
@@ -149,6 +152,7 @@ Locale de_locale = {
     .error_open_file = "Fehler beim Öffnen der Datei.",
     .error_load_img = "Fehler: Bild konnte nicht geladen werden!",
     .error_size = "FEHLERGRÖSSE: ",
+    .error_size_factor_canvas = "Fehler: Der Bildzoomfaktor kann nicht kleiner oder gleich Null sein.",
     .texture = "Textur: ",
     .texture_bg = "Hintergrundtextur: ",
     .image = "Bild: ",
@@ -193,6 +197,7 @@ Locale es_locale = {
     .error_open_file = "Error al abrir el archivo.",
     .error_load_img = "Error: ¡No se pudo cargar la imagen!",
     .error_size = "ERROR DE TAMAÑO: ",
+    .error_size_factor_canvas = "Error: El factor de zoom de la imagen no puede ser menor o igual a cero.",
     .texture = "Textura: ",
     .texture_bg = "Textura de fondo: ",
     .image = "Imagen: ",
@@ -232,4 +237,33 @@ Teclas disponibles:\n\
     .remove_temp_file = "Eliminando archivo temporal...",
 };
 
-Locale *locale = &en_locale;
+Locale *locale = &en_locale; // Текущая локаль
+
+// Установка языка
+void set_lang(string l)
+{
+    // Устанавливаем локаль из переменных окружения
+    std::setlocale(LC_ALL, "");
+    string locale_use; // Локаль
+    
+    if (l == "auto")
+        locale_use = std::setlocale(LC_ALL, nullptr);
+    else
+        locale_use = l;
+
+    // Приводим к нижнему регистру
+    std::transform(locale_use.begin(), locale_use.end(), locale_use.begin(), 
+                   [](unsigned char c){ return std::tolower(c); });
+
+    // Получаем текущую локаль
+    if (locale_use.rfind("ru", 0) == 0)
+        locale = &ru_locale;
+    else if (locale_use.rfind("fr", 0) == 0)
+        locale = &fr_locale;
+    else if (locale_use.rfind("de", 0) == 0)
+        locale = &de_locale;
+    else if (locale_use.rfind("es", 0) == 0)
+        locale = &es_locale;
+    else
+        locale = &en_locale;
+}

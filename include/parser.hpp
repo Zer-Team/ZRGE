@@ -31,4 +31,4 @@ uint16_t convertBEInShort(const std::array<uint8_t, 6> &bytes);
 uint64_t convertBEInInt(const std::array<uint8_t, 6> &bytes);
 
 // Функция парсинга параметров
-signed char parserParams(Image &img, const std::string &filepath);
+signed char parserParams(zp::Image &img, const std::string &filepath);

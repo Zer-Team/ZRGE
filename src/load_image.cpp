@@ -11,10 +11,10 @@
 
 #include "../include/load_image.hpp"
 
-signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
+signed char loadingImage(zp::Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
 {
     // Проверки форматов
-    if ((img.format == ImageFormat::PNG || img.format == ImageFormat::JPEG) && isOpenFile)
+    if ((img.format == zrg::ImageFormat::PNG || img.format == zrg::ImageFormat::JPEG) && isOpenFile)
     {
         // Загрузка изображения
         if (!canvas.loadFromFile(filepath))
@@ -27,7 +27,7 @@ signed char loadingImage(Image &img, sf::Image &canvas, sf::Texture &texture, st
         img.width = canvas.getSize().x;
         img.height = canvas.getSize().y;
     }
-    else if (img.format == ImageFormat::ZPIF && isOpenFile)
+    else if (img.format == zrg::ImageFormat::ZPIF && isOpenFile)
     {
         // Объявление переменных
         std::ifstream inputFile{filepath, std::ios::binary}; // Файл изображения

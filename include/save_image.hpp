@@ -28,7 +28,7 @@ using std::cout;
 using std::endl;
 
 // Запись данных в изображения
-signed char recordPixelData(std::string &filename, sf::Image &image, Image &img);
+signed char recordPixelData(std::string &filename, sf::Image &image, zp::Image &img);
 
 // Сохранение изображения
-signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp);
+signed char saveImageZPIF(sf::Image &canvas, zp::Image &img, std::string &filename, std::string &filename_temp);

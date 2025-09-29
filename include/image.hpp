@@ -15,29 +15,33 @@
 #include <string>
 #include <cstdint>
 
-// Форматы изображения
-enum class ImageFormat
-{
-    PNG,
-    JPEG,
-    ZPIF,
-    NONE
-};
+namespace zrg {
+    // Форматы изображения
+    enum class ImageFormat
+    {
+        PNG,
+        JPEG,
+        ZPIF,
+        NONE
+    };
+}
 
-// Класс изображения
-class Image
-{
-public:
-    ImageFormat format{ImageFormat::NONE}; // Формат изображения
+namespace zp {
+    // Класс изображения
+    class Image
+    {
+    public:
+        zrg::ImageFormat format{zrg::ImageFormat::NONE}; // Формат изображения
 
-    uint32_t width{0};                     // Ширина изображения
-    uint32_t height{0};                    // Высота изображения
-    float factor{0};                       // Фактор для увлечения (НЕ МОЖЕТ БЫТЬ <0)
+        uint32_t width{0};                     // Ширина изображения
+        uint32_t height{0};                    // Высота изображения
+        float factor{0};                       // Фактор для увлечения (НЕ МОЖЕТ БЫТЬ <0)
 
-    uint16_t quantity{0};                  // Количество одинаковых пикселей подряд (для сжатия)
-    uint64_t point{0};                     // Позиция пикселя (с лево на право сверху вниз)
+        uint16_t quantity{0};                  // Количество одинаковых пикселей подряд (для сжатия)
+        uint64_t point{0};                     // Позиция пикселя (с лево на право сверху вниз)
 
-    std::streampos renderStart{0};         // Позиция начала данных о пикселе
-};
+        std::streampos renderStart{0};         // Позиция начала данных о пикселе
+    };
+}
 
 #endif // _IMAGE_HPP_

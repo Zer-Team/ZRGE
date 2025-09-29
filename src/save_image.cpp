@@ -12,7 +12,7 @@
 #include "../include/save_image.hpp"
 
 // Запись данных в изображения
-signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
+signed char recordPixelData(std::string &filename, sf::Image &image, zp::Image &img)
 {
     std::ofstream file(filename, std::ios::binary);       // Файл на запись
     const size_t bufferSize = img.width * img.height * 6; // Размер буфера
@@ -56,7 +56,7 @@ signed char recordPixelData(std::string &filename, sf::Image &image, Image &img)
 }
 
 // Сохранение изображения
-signed char saveImageZPIF(sf::Image &canvas, Image &img, std::string &filename, std::string &filename_temp)
+signed char saveImageZPIF(sf::Image &canvas, zp::Image &img, std::string &filename, std::string &filename_temp)
 {
     // Запись данных в tmp файл
     cout << locale->write_in_temp_file << std::endl;

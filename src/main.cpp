@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////
 ///                        ID: HM0101                        ///
 ///                      Version: 1.0.8                      ///
-///                     Date: 2025-09-25                     ///
+///                     Date: 2025-09-27                     ///
 ///                     Author: Zer Team                     ///
 ////////////////////////////////////////////////////////////////
 
@@ -25,7 +25,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
-#include <clocale>
 #include "../include/image.hpp"
 #include "../include/locale.hpp"
 #include "../include/utils.hpp"
@@ -39,31 +38,17 @@
 
 int main(int argc, char **argv)
 {
-
-    // Устанавливаем локаль из переменных окружения (LANG, LC_*)
-    std::setlocale(LC_ALL, "");
-
-    Image img;                                        // Изображения
+    zp::Image img;                                        // Изображения
     std::string file_path_temp{".tempZRGEfile.tmp"}; // Путь к временному файлу
     std::string file_path;                            // Путь к файлу
-    std::string icon_path{"/usr/share/zrge"};        // Путь к иконкам
+    std::string icon_path{"/usr/share/zrge"};         // Путь к иконкам
     sf::Image canvas;                                 // Холст
     sf::Texture texture;                              // Текстура холста
 
-    // Локаль
-    // Получаем текущую локаль для всех категорий
-    const string locale_use = std::setlocale(LC_ALL, nullptr);
+    // Автоматическая установка языка 
+    set_lang("auto");
 
-    if (locale_use.find("ru_RU") != NPOS)
-        locale = &ru_locale;
-    else if (locale_use.find("fr_FR") != NPOS)
-        locale = &fr_locale;
-    else if (locale_use.find("de_DE") != NPOS)
-        locale = &de_locale;
-    else if (locale_use.find("es_ES") != NPOS)
-        locale = &es_locale;
-
-    // Получения пути к файлу
+    // Обработка аргументов
     if (argc > 1)
     {
         for (uint16_t i = 1; i < argc; i++)
@@ -74,44 +59,33 @@ int main(int argc, char **argv)
             {
                 cout << locale->help << endl;
                 return 0;
-            }
+            }  
             else if (arg == "-v" || arg == "--version")
             {
                 cout << locale->version << ": \033[1m" << VERSION << "\033[0m" << endl;
                 return 0;
             }
-            else if (arg.find("--pathicon=") != NPOS)
-            {
-                icon_path = arg.substr(11);
-            }
-            else if (arg.find("--lang=") != NPOS)
-            {
-                string l = arg.substr(7);
-                if (l.find("ru") != NPOS)
-                    locale = &ru_locale;
-                else if (l.find("fr") != NPOS)
-                    locale = &fr_locale;
-                else if (l.find("de") != NPOS)
-                    locale = &de_locale;
-                else if (l.find("es") != NPOS)
-                    locale = &es_locale;
-                else
-                    locale = &en_locale;
-            }
-            else if (arg.find_first_of("--path=") != std::string::npos)
-            {
-                file_path = arg.substr(7);
-            }
+            // Путь к иконкам
+            else if (arg.find("pathicon=") != NPOS)
+                icon_path = arg.substr(9);
+            // Язык
+            else if (arg.find("lang=") != NPOS)
+                set_lang(arg.substr(5));
+            // Путь к файлу
+            else if (arg.find_first_of("path=") != std::string::npos)
+                file_path = arg.substr(5);
         }
-    cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
     }
-    else
+    // Вывод приветсвия
+    cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
+    
+    // Проверка введён ли путь к файлу
+    if (file_path.empty())
     {
-        cout << "\033[1;33m" << locale->welcome << ' ' << locale->zrge << ' ' << VERSION << "!\033[0m" << endl;
         cout << "\033[1m" << locale->enter_file_path << ": \033[0m";
         getline(std::cin, file_path);
     }
-
+        
     // Проверка отсутствия файла
     if (!std::ifstream(file_path).is_open())
     {
@@ -137,35 +111,33 @@ int main(int argc, char **argv)
         getNumberOrChar(img.height);
 
     }
+    // Парсинг параметров если это ZPIF
     else if (file_path.substr(file_path.length() - 5) == ".zpif")
-    {
-        // Парсинг параметров
         if (parserParams(img, file_path) < 0) return 1;
-    }
 
     // Запрос увлечения
     cout << locale->enter_canvas_factor;
     getNumberOrChar(img.factor);
     if (img.factor <= 0)
     {
-        cerr << "\033[1;31mError: The factor cannot be less than or equal to zero.\033[0m" << endl;
+        cerr << "\033[1;31m""\033[0m" << endl;
         return 1;
     }
 
     // Заполнение структуры изображения
     //  Формат изображения PNG
     if (file_path.substr(file_path.length() - 4) == ".png")
-        img.format = ImageFormat::PNG;
+        img.format = zrg::ImageFormat::PNG;
     //  Формат изображения JPG
     else if (file_path.substr(file_path.length() - 4) == ".jpg" || file_path.substr(file_path.length() - 5) == ".jpeg")
-        img.format = ImageFormat::JPEG;
+        img.format = zrg::ImageFormat::JPEG;
     //  Формат изображения ZPIF
     else if (file_path.substr(file_path.length() - 5) == ".zpif")
-        img.format = ImageFormat::ZPIF;
+        img.format = zrg::ImageFormat::ZPIF;
     //  Ошибка не поддерживаемого формата
     else
     {
-        cerr << "\033[1;31mError 2: Unsupported file format.\033[0m" << endl;
+        cerr << "\033[1;31m" << locale->error_no_supp_file << "\033[0m" << endl;
         return 1;
     }
 

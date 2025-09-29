@@ -31,4 +31,4 @@ void convertNumberInBE(const uint16_t value, std::array<uint8_t, 6> &bytes, cons
 void convertNumberInBE(const uint32_t value, std::array<uint8_t, 6> &bytes);
 
 // Сжатие RLE
-signed char compress_rle(const std::string &input, const std::string &output, const Image &img);
+signed char compress_rle(const std::string &input, const std::string &output, const zp::Image &img);
