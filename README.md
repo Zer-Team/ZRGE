@@ -7,6 +7,8 @@
 
 **ZeR Graphic Editor (ZRGE)** is a simple raster graphics editor designed to work with the [ZPIF](https://github.com/Zer-Team/ZPIF), PNG, and JPEG formats. Alpha channel is supported since version 1.0.3. Uses SFML 3.0.0 (since version 1.0.6). Distributed under the **GPLv3** license.
 
+[![Donate](https://img.shields.io/badge/Donate-Поддержать%20проект-007BFF?style=for-the-badge)](https://pay.cloudtips.ru/p/204a4487)
+
 ---
 
 <p align="center">
