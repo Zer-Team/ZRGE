@@ -38,8 +38,8 @@
 
 int main(int argc, char **argv)
 {
-    zp::Image img;                                        // Изображения
-    std::string file_path_temp{".tempZRGEfile.tmp"}; // Путь к временному файлу
+    zp::Image img;                                    // Изображения
+    std::string file_path_temp{".tempZRGEfile.tmp"};  // Путь к временному файлу
     std::string file_path;                            // Путь к файлу
     std::string icon_path{"/usr/share/zrge"};         // Путь к иконкам
     sf::Image canvas;                                 // Холст
