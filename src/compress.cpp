@@ -1,4 +1,8 @@
 #include "../include/compress.hpp"
+#include "../include/locale.hpp"
+#include <vector>
+#include <ctime>
+#include <fstream>
 
 // Преобразование числа u_short в big-endian
 void convertNumberInBE(const uint16_t value, std::array<uint8_t, 6> &bytes, const uint8_t &shift)
@@ -19,9 +23,10 @@ void convertNumberInBE(const uint32_t value, std::array<uint8_t, 6> &bytes)
 // Сжатие RLE
 signed char compress_rle(const std::string &input, const std::string &output, const zp::Image &img)
 {
-    std::ifstream inputFile(input, std::ios::binary);   // Файл для чтения
-    std::ofstream outputFile(output, std::ios::binary); // Файл для записи
+    std::ifstream inputFile(input, std::ios::binary);     // Файл для чтения
+    std::ofstream outputFile(output, std::ios::binary);   // Файл для записи
 
+    // Проверка файлов
     if (!inputFile || !outputFile)
     {
         cerr << "\033[31m" << locale->error_open_file << "\033[0m" << endl;

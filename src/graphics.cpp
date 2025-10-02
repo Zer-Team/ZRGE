@@ -10,6 +10,12 @@
 */
 
 #include "../include/graphics.hpp"
+#include "../include/draw.hpp"
+#include "../include/utils.hpp"
+#include "../include/save_image.hpp"
+#include <cmath>
+#include <stack>
+#include <algorithm>
 
 // Рисования звезды
 void drawStar(sf::Image &canvas, sf::Texture &texture, const zp::Image &img, sf::Vector2f &figuresStart, sf::Vector2f &figuresEnd, sf::Color &color)
@@ -29,8 +35,8 @@ void drawStar(sf::Image &canvas, sf::Texture &texture, const zp::Image &img, sf:
     if (rectHeight < 0)
         figuresStart.y += rectHeight, rectHeight = -rectHeight;
 
-    int centerX = figuresStart.x + rectWidth / 2;
-    int centerY = figuresStart.y + rectHeight / 2;
+    int centerX = figuresStart.x + (float)rectWidth / 2;
+    int centerY = figuresStart.y + (float)rectHeight / 2;
 
     float scaleX = rectWidth / 2.0f;
     float scaleY = rectHeight / 2.0f;
@@ -91,7 +97,7 @@ void drawOval(sf::Image &canvas, sf::Texture &texture, const zp::Image &img, sf:
     if (rectHeight < 0)
         figuresStart.y += rectHeight, rectHeight = -rectHeight;
 
-    int centerX = figuresStart.x + rectWidth / 2, centerY = figuresStart.y + rectHeight / 2, radiusX = rectWidth / 2, radiusY = rectHeight / 2;
+    int centerX = figuresStart.x + (float)rectWidth / 2, centerY = figuresStart.y + (float)rectHeight / 2, radiusX = rectWidth / 2, radiusY = rectHeight / 2;
     float radiusXSq = static_cast<float>(radiusX * radiusX);
     float radiusYSq = static_cast<float>(radiusY * radiusY);
 
@@ -288,15 +294,15 @@ int render(zp::Image &img, sf::Image &canvas, sf::Texture &texture, string &icon
     sliderB.setFillColor(sf::Color::Blue);
     //   Разделитель
     indent.setFillColor(sf::Color(60, 60, 60));
-    indent.setSize(sf::Vector2f(INDENT_X / 2, window.getSize().y));
+    indent.setSize(sf::Vector2f((float)INDENT_X / 2, window.getSize().y));
     indent.setPosition(sf::Vector2f(img.width * img.factor, 0));
     //   Показатель цвета
-    colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
-    colorPreview.setPosition(sf::Vector2f(img.width * img.factor + INDENT_X / 2, 0));
+    colorPreview.setSize(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + (float)INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
+    colorPreview.setPosition(sf::Vector2f(img.width * img.factor + (float)INDENT_X / 2, 0));
     colorPreview.setFillColor(color);
     //   Фон для инструментов
-    sf::RectangleShape backgroundRight(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + INDENT_X / 2, window.getSize().y - HEIGHT_COLOR_PREVIEW));
-    backgroundRight.setPosition(sf::Vector2f(img.width * img.factor + INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
+    sf::RectangleShape backgroundRight(sf::Vector2f(WIDTH_COLOR_SLIDER + INDENT_X + (float)INDENT_X / 2, window.getSize().y - HEIGHT_COLOR_PREVIEW));
+    backgroundRight.setPosition(sf::Vector2f(img.width * img.factor + (float)INDENT_X / 2, HEIGHT_COLOR_PREVIEW));
     backgroundRight.setFillColor(sf::Color(120, 120, 120));
 
     // Переменные для расчёта FPS
@@ -704,10 +710,10 @@ int render(zp::Image &img, sf::Image &canvas, sf::Texture &texture, string &icon
 
 
         // Создание слайдеров
-        drawSlider(window, sliderR, color.r, sf::Color::Red, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + 10));
-        drawSlider(window, sliderG, color.g, sf::Color::Green, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR + 10 * 2));
-        drawSlider(window, sliderB, color.b, sf::Color::Blue, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 2 + 10 * 3));
-        drawSlider(window, sliderA, color.a, sf::Color::White, sf::Vector2f((img.width * img.factor) + INDENT_X + INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 3 + 10 * 4));
+        drawSlider(window, sliderR, color.r, sf::Color::Red, sf::Vector2f((img.width * img.factor) + INDENT_X + (float)INDENT_X / 4, HEIGHT_COLOR_PREVIEW + 10));
+        drawSlider(window, sliderG, color.g, sf::Color::Green, sf::Vector2f((img.width * img.factor) + INDENT_X + (float)INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR + 10 * 2));
+        drawSlider(window, sliderB, color.b, sf::Color::Blue, sf::Vector2f((img.width * img.factor) + INDENT_X + (float)INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 2 + 10 * 3));
+        drawSlider(window, sliderA, color.a, sf::Color::White, sf::Vector2f((img.width * img.factor) + INDENT_X + (float)INDENT_X / 4, HEIGHT_COLOR_PREVIEW + HEIGHT_COLOR_INDICATOR * 3 + 10 * 4));
 
         // Создание кнопок
         //   1

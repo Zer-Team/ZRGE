@@ -10,17 +10,10 @@
 
 #pragma once
 
-// Библиотеки
-#include <fstream>
 #include <string>
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <cstdint>
-
-// Собственные
 #include "image.hpp"
-#include "locale.hpp"
-#include "compress.hpp"
 
 // Добавления в область видимости
 using std::cerr;

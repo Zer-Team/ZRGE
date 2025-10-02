@@ -10,6 +10,8 @@
 */
 
 #include "../include/locale.hpp"
+#include <algorithm>
+#include <clocale>
 
 // Английский
 Locale en_locale = {

@@ -13,14 +13,8 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <limits>
-#include <cmath>
-#include <algorithm>
 #include "image.hpp"
 #include "locale.hpp"
-#include "draw.hpp"
-#include "save_image.hpp"
-#include "utils.hpp"
 
 // Размеры
 #define INDENT_X 10 // Разделитель

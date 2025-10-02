@@ -25,6 +25,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
+#include <cstdint>
+#include <fstream>
 #include "../include/image.hpp"
 #include "../include/locale.hpp"
 #include "../include/utils.hpp"
@@ -34,7 +36,6 @@
 
 // Макросы
 #define VERSION    "1.0.8"                           // Версия
-#define NPOS       std::string::npos                 // NPOS
 
 int main(int argc, char **argv)
 {
@@ -55,24 +56,26 @@ int main(int argc, char **argv)
         {
             std::string arg = argv[i];
 
+            // Помощь
             if (arg == "-h" || arg == "--help")
             {
                 cout << locale->help << endl;
                 return 0;
-            }  
+            }
+            // Версия
             else if (arg == "-v" || arg == "--version")
             {
                 cout << locale->version << ": \033[1m" << VERSION << "\033[0m" << endl;
                 return 0;
             }
             // Путь к иконкам
-            else if (arg.find("pathicon=") != NPOS)
+            else if (arg.rfind("pathicon=", 0) == 0)
                 icon_path = arg.substr(9);
             // Язык
-            else if (arg.find("lang=") != NPOS)
+            else if (arg.rfind("lang=", 0) == 0)
                 set_lang(arg.substr(5));
             // Путь к файлу
-            else if (arg.find_first_of("path=") != std::string::npos)
+            else if (arg.rfind("path=", 0) == 0)
                 file_path = arg.substr(5);
         }
     }
@@ -109,7 +112,6 @@ int main(int argc, char **argv)
         getNumberOrChar(img.width);
         cout << locale->enter_img_h;
         getNumberOrChar(img.height);
-
     }
     // Парсинг параметров если это ZPIF
     else if (file_path.substr(file_path.length() - 5) == ".zpif")
@@ -146,4 +148,6 @@ int main(int argc, char **argv)
 
     // Рендер
     if(render(img, canvas, texture, icon_path, file_path, file_path_temp) < 0) return 1;
+
+    return 0;
 }

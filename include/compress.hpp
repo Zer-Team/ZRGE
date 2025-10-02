@@ -11,13 +11,9 @@
 #pragma once
 
 #include <cstdint>
-#include <ctime>
 #include <array>
-#include <fstream>
 #include <iostream>
-#include <vector>
 #include "image.hpp"
-#include "locale.hpp"
 
 // Добавления в область видимости
 using std::cerr;

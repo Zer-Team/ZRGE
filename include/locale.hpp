@@ -11,8 +11,6 @@
 #pragma once
 
 #include <string>
-#include <algorithm>
-#include <clocale>
 
 using std::string;
 

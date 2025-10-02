@@ -12,13 +12,7 @@
 
 // Библиотеки
 #include <SFML/Graphics.hpp>
-#include <fstream>
-#include <cstdint>
-#include <array>
-// Собственные
 #include "image.hpp"
-#include "locale.hpp"
-#include "parser.hpp"
 
 // Загрузка файла в холст
 signed char loadingImage(zp::Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile);

@@ -1,4 +1,6 @@
 #include "../include/parser.hpp"
+#include <fstream>
+#include "../include/locale.hpp"
 
 // Функция для чтения unsigned short из файла в формате big-endian
 uint16_t convertBEInShort(const std::array<uint8_t, 6> &bytes)

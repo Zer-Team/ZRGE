@@ -10,6 +10,10 @@
 */
 
 #include "../include/save_image.hpp"
+#include "../include/locale.hpp"
+#include "../include/compress.hpp"
+#include <cstdint>
+#include <fstream>
 
 // Запись данных в изображения
 signed char recordPixelData(std::string &filename, sf::Image &image, zp::Image &img)

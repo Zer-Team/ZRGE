@@ -12,8 +12,6 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <stack>
-#include "image.hpp"
 
 // Слайдер
 #define WIDTH_COLOR_SLIDER 255

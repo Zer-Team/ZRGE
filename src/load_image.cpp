@@ -10,6 +10,11 @@
 */
 
 #include "../include/load_image.hpp"
+#include "../include/locale.hpp"
+#include "../include/parser.hpp"
+#include <fstream>
+#include <cstdint>
+#include <array>
 
 signed char loadingImage(zp::Image &img, sf::Image &canvas, sf::Texture &texture, std::string &filepath, bool isOpenFile)
 {
@@ -75,6 +80,8 @@ signed char loadingImage(zp::Image &img, sf::Image &canvas, sf::Texture &texture
         std::cerr << "\033[1;31m" << locale->error_resize_texture << ' ' << img.width << "x" << img.height << "\033[0m" << std::endl;
         return 1;
     }
+
+    // Обнавления холста
     texture.update(canvas);
 
     return 0;
